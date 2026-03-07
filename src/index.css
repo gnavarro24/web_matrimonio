@@ -1,0 +1,100 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Anastasia Script';
+  src: url('./assets/fonts/Anastasia-Script_Regular.woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cormorant Garamond';
+  src: url('./assets/fonts/CormorantGaramond-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pinyon Script';
+  src: url('./assets/fonts/PinyonScript-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Black Gold';
+  src: url('./assets/fonts/BlackGold.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply text-black font-sans antialiased;
+  background-color: #f7f2e9;
+}
+
+.bg-cream {
+  background-color: #f7f2e9;
+}
+
+/* Elegant double-line frame */
+.elegant-frame {
+  position: relative;
+  padding: 12px;
+}
+
+.elegant-frame::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 1px solid #6b5d36;
+}
+
+.elegant-frame::after {
+  content: '';
+  position: absolute;
+  inset: 6px;
+  border: 1px solid #6b5d36;
+}
+
+.elegant-frame .corner-ornament {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  z-index: 2;
+}
+
+.elegant-frame .corner-ornament::before,
+.elegant-frame .corner-ornament::after {
+  content: '';
+  position: absolute;
+  background-color: #6b5d36;
+}
+
+.elegant-frame .corner-ornament::before {
+  width: 16px;
+  height: 1px;
+  top: 50%;
+}
+
+.elegant-frame .corner-ornament::after {
+  width: 1px;
+  height: 16px;
+  left: 50%;
+}
+
+.elegant-frame .corner-tl { top: -1px; left: -1px; }
+.elegant-frame .corner-tr { top: -1px; right: -1px; }
+.elegant-frame .corner-bl { bottom: -1px; left: -1px; }
+.elegant-frame .corner-br { bottom: -1px; right: -1px; }
