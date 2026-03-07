@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import videoExample from '../assets/decor/video_web.mov';
+import videoExample from '../assets/decor/video_web.mp4';
 
 const Hero = () => {
 
