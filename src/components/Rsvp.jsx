@@ -7,6 +7,8 @@ const Rsvp = () => {
     const [formData, setFormData] = useState({
         name: '',
         email: '',
+        countryCode: '+57',
+        phone: '',
         attending: 'yes',
         guests: '1',
         message: ''
@@ -25,11 +27,12 @@ const Rsvp = () => {
                 body: JSON.stringify({
                     name: formData.name,
                     email: formData.email,
+                    phone: formData.countryCode + ' ' + formData.phone,
                     attending: formData.attending
                 })
             });
             setStatus('success');
-            setFormData({ name: '', email: '', attending: 'yes', guests: '1', message: '' });
+            setFormData({ name: '', email: '', countryCode: '+57', phone: '', attending: 'yes', guests: '1', message: '' });
         } catch {
             setStatus('idle');
             alert('Hubo un error al enviar. Por favor intenta de nuevo.');
@@ -44,8 +47,8 @@ const Rsvp = () => {
         <SectionWrapper id="rsvp" className="bg-cream">
             <div className="max-w-xl mx-auto pt-10">
                 <div className="text-center mb-12">
-                    <h2 className="text-4xl md:text-5xl mt-4 mb-4 text-black">Soft RSVP</h2>
-                    <p>Queremos prepararlo todo con amor. <br />
+                    <h2 className="text-4xl md:text-5xl mt-4 mb-4 text-black font-blackGold"><span className="font-anastasia">Soft</span> RSVP</h2>
+                    <p className="text-3xl md:text-2xl font-cormorant">Queremos prepararlo todo con amor. <br />
 
                         Si todavía no sabes con certeza si podrás asistir, cuéntanoslo.
                         Nos ayudará muchísimo para planear este día tan especial con tiempo y cuidado.</p>
@@ -95,6 +98,30 @@ const Rsvp = () => {
                                 className="w-full p-3 border-b border-gray-300 focus:border-dusty-olive outline-none transition-colors bg-transparent"
                                 placeholder="juan@ejemplo.com"
                             />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm uppercase tracking-wider mb-2 text-gray-500">Teléfono</label>
+                            <div className="flex gap-3">
+                                <select
+                                    name="countryCode"
+                                    value={formData.countryCode}
+                                    onChange={handleChange}
+                                    className="w-28 p-3 border-b border-gray-300 focus:border-dusty-olive outline-none bg-transparent"
+                                >
+                                    <option value="+57">🇨🇴 +57</option>
+                                    <option value="+1">🇺🇸 +1</option>
+                                </select>
+                                <input
+                                    type="tel"
+                                    name="phone"
+                                    required
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    className="flex-1 p-3 border-b border-gray-300 focus:border-dusty-olive outline-none transition-colors bg-transparent"
+                                    placeholder="300 123 4567"
+                                />
+                            </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-6">
