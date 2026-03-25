@@ -64,29 +64,32 @@ const OurStory = () => {
         return () => clearTimeout(timer);
     });
     return (
+        <>
+        <section className="bg-[#697857] text-white py-12">
+            <motion.div
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3, duration: 0.8 }}
+                className="text-8xl sm:text-7xl md:text-[10rem] font-cormorant text-center"
+            >
+                20.03.27
+            </motion.div>
+            <div className="text-2xl sm:text-3xl md:text-4xl mb-10 mt-5 font-cormorant text-center">
+                Medellín, Colombia
+            </div>
+            {/* Countdown */}
+            <div className="flex justify-center gap-8 md:gap-12 font-sans">
+                {Object.keys(timeLeft).map((interval) => (
+                    <div key={interval} className="flex flex-col items-center">
+                        <span className="font-serif text-xl sm:text-3xl md:text-4xl">{timeLeft[interval] || '0'}</span>
+                        <span className="text-[10px] sm:text-xs uppercase tracking-widest mt-2">{interval}</span>
+                    </div>
+                ))}
+            </div>
+        </section>
         <SectionWrapper id="story" className="bg-cream">
             <div className="mb-12">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.5 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.3, duration: 0.8 }}
-                    className="text-8xl sm:text-7xl md:text-[10rem] font-cormorant text-center text-dark-olive"
-                >
-                    20.03.27
-                </motion.div>
-                <div className="text-2xl sm:text-3xl md:text-4xl mb-10 mt-5 font-cormorant text-center text-dark-olive">
-                    Medellín, Colombia
-                </div>
 
-                {/* Countdown */}
-                <div className="flex justify-center gap-8 md:gap-12 font-sans text-dark-olive">
-                    {Object.keys(timeLeft).map((interval) => (
-                        <div key={interval} className="flex flex-col items-center">
-                            <span className="font-serif text-xl sm:text-3xl md:text-4xl">{timeLeft[interval] || '0'}</span>
-                            <span className="text-[10px] sm:text-xs uppercase tracking-widest mt-2">{interval}</span>
-                        </div>
-                    ))}
-                </div>
             </div>
             <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div className="order-2 md:order-1">
@@ -101,13 +104,13 @@ const OurStory = () => {
 
                 <div className="order-1 md:order-2 text-center md:text-left">
                     <p className="text-lg sm:text-2xl md:text-3xl text-black/80 mb-6 font-normal font-cormorant text-center">
-                        Queremos que formes parte de este capítulo tan importante en nuestras vidas,
+                        Queremos que seas parte de este capítulo tan importante en nuestras vidas,
                         que brindes con nosotros, que rías con nosotros
                         y que bailes hasta que la noche se vuelva recuerdo.
                     </p>
                     <p className="text-lg sm:text-2xl md:text-3xl text-black/80 font-normal font-cormorant text-center">
                         Esperamos que nos puedas acompañar
-                        para celebrar este dulce amor que hoy se convierte en promesa.
+                        para celebrar este dulce amor.
                     </p>
                     <div ref={theTypewriter.ref} className="order-3 mt-12">
                         <p className="text-6xl sm:text-8xl md:text-[7rem] text-black/80 font-normal font-cormorant text-center md:mr-[70px]">
@@ -122,6 +125,7 @@ const OurStory = () => {
                 </div>
             </div>
         </SectionWrapper>
+        </>
     );
 };
 
