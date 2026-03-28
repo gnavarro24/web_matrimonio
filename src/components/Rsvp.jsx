@@ -47,10 +47,9 @@ const Rsvp = () => {
         <SectionWrapper id="rsvp" className="bg-cream">
             <div className="max-w-xl mx-auto pt-10">
                 <div className="text-center mb-12">
-                    <h2 className="text-4xl md:text-5xl mt-4 mb-4 text-black font-blackGold"><span className="font-anastasia">Soft</span> RSVP</h2>
-                    <p className="text-3xl md:text-2xl font-cormorant">Queremos prepararlo todo con amor. <br />
-
-                        Si todavía no sabes con certeza si podrás asistir, cuéntanoslo.
+                    <h2 className="text-4xl md:text-5xl mt-4 mb-4 text-black font-blackGold"><span className="font-anastasia">Soft&nbsp;</span> RSVP</h2>
+                    <p className="text-1xl sm:text-lg md:text-xl font-cormorant">Queremos prepararlo todo con amor. <br />
+                        Si ya sabes con certeza si podrás acompañarnos, cuéntanoslo.
                         Nos ayudará muchísimo para planear este día tan especial con tiempo y cuidado.</p>
                 </div>
 

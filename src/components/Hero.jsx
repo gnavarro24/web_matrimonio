@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import videoExample from '../assets/decor/video_web.mp4';
 
@@ -21,16 +21,28 @@ const useTypewriter = (text, speed = 100, delay = 1500) => {
     return { displayed, done: displayed.length === text.length };
 };
 
-const Hero = () => {
+const Hero = ({ videoShouldPlay = false }) => {
     const { displayed: typewriterText, done: typewriterDone } = useTypewriter('Save the Date', 120, 1800);
+    const videoRef = useRef(null);
+
+    useEffect(() => {
+        const video = videoRef.current;
+        if (video) {
+            if (videoShouldPlay) {
+                video.play().catch(console.error);
+            } else {
+                video.pause();
+            }
+        }
+    }, [videoShouldPlay]);
 
     return (
         <header id="home" className="relative h-screen flex items-center justify-center overflow-clip">
             {/* Background Video with Overlay */}
             <div className="absolute inset-0 z-0">
                 <video
+                    ref={videoRef}
                     src={videoExample}
-                    autoPlay
                     loop
                     muted
                     playsInline
@@ -46,7 +58,8 @@ const Hero = () => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.8, duration: 1 }}
-                    className="text-5xl sm:text-8xl md:text-[10rem] font-anastasia text-porcelain overflow-visible pr-4"
+                    className="text-5xl sm:text-8xl md:text-[10rem] font-anastasia text-porcelain overflow-visible pr-4 leading-tight py-4"
+                    style={{ lineHeight: '1.1', paddingTop: '0.5em' }}
                 >
                     Gustavo &amp; Geraldine
                 </motion.p>

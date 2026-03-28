@@ -98,3 +98,29 @@ body {
 .elegant-frame .corner-tr { top: -1px; right: -1px; }
 .elegant-frame .corner-bl { bottom: -1px; left: -1px; }
 .elegant-frame .corner-br { bottom: -1px; right: -1px; }
+
+/* Audio Player Styles */
+.audio-slider {
+  background: linear-gradient(to right, #697857 0%, #697857 var(--value, 50%), #e5e7eb var(--value, 50%), #e5e7eb 100%);
+}
+
+.audio-slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 14px;
+  width: 14px;
+  background: #697857;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.audio-slider::-moz-range-thumb {
+  height: 14px;
+  width: 14px;
+  background: #697857;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
