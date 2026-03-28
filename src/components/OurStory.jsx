@@ -37,8 +37,9 @@ const useTypewriterOnView = (text, speed = 100, delay = 300) => {
 
 const OurStory = () => {
     const calculateTimeLeft = () => {
-        // Fecha de la boda: 20 de marzo de 2027
-        const difference = +new Date("2027-03-20") - +new Date();
+        // Fecha de la boda: 20 de marzo de 2027 a las 4:00 PM (hora Colombia)
+        const weddingDate = new Date("2027-03-20T16:00:00-05:00"); // 4 PM GMT-5 Colombia
+        const difference = weddingDate.getTime() - new Date().getTime();
         let timeLeft = {};
 
         if (difference > 0) {

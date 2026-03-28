@@ -14,25 +14,111 @@ const Rsvp = () => {
         message: ''
     });
     const [status, setStatus] = useState('idle'); // idle, submitting, success
+    const [errors, setErrors] = useState({});
+
+    // Función de validación completa
+    const validateForm = () => {
+        const newErrors = {};
+
+        // Validar nombre (mínimo 2 caracteres)
+        if (!formData.name || formData.name.trim().length < 2) {
+            newErrors.name = 'Por favor ingresa tu nombre completo';
+        }
+
+        // Validar email
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!formData.email || !emailRegex.test(formData.email)) {
+            newErrors.email = 'Por favor ingresa un email válido';
+        }
+
+        // Validar teléfono (dependiendo del código de país)
+        if (!formData.phone || formData.phone.trim().length === 0) {
+            newErrors.phone = 'Por favor ingresa tu número celular';
+        } else {
+            const cleanPhone = formData.phone.replace(/\s/g, '');
+            if (formData.countryCode === '+57') {
+                // Colombia: 10 dígitos (300 123 4567)
+                if (cleanPhone.length !== 10 || !/^3\d{9}$/.test(cleanPhone)) {
+                    newErrors.phone = 'Ingresa un número celular válido de Colombia (ej: 300 123 4567)';
+                }
+            } else if (formData.countryCode === '+1') {
+                // USA: 10 dígitos
+                if (cleanPhone.length !== 10 || !/^\d{10}$/.test(cleanPhone)) {
+                    newErrors.phone = 'Ingresa un número celular válido de USA (ej: 555 123 4567)';
+                }
+            }
+        }
+
+        // Validar asistencia (aunque ya tiene valor por defecto)
+        if (!formData.attending) {
+            newErrors.attending = 'Por favor confirma tu asistencia';
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Validar todos los campos antes de enviar
+        if (!validateForm()) {
+            // Scroll al primer campo con error
+            const firstErrorField = document.querySelector('.border-red-500');
+            if (firstErrorField) {
+                firstErrorField.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
+
+        // Verificar si ya se envió un RSVP reciente para este email
+        const lastSubmission = localStorage.getItem(`rsvp_${formData.email}`);
+        if (lastSubmission) {
+            const lastTime = new Date(lastSubmission);
+            const now = new Date();
+            const timeDiff = now - lastTime;
+            const hoursDiff = timeDiff / (1000 * 60 * 60);
+
+            // Si se envió hace menos de 1 hora, mostrar advertencia
+            if (hoursDiff < 1) {
+                alert('Ya enviaste una respuesta recientemente. Si necesitas hacer cambios, por favor contacta directamente a los novios.');
+                return;
+            }
+        }
+
         setStatus('submitting');
 
+        // Generar timestamp único para evitar duplicados
+        const timestamp = new Date().toISOString();
+        const submissionId = `${formData.email}_${Date.now()}`;
+
+        // Preparar datos para envío (sin el símbolo + en el código)
+        const cleanCountryCode = formData.countryCode.replace('+', ''); // Remover el +
+        const dataToSend = {
+            submissionId: submissionId,
+            timestamp: timestamp,
+            name: formData.name,
+            email: formData.email,
+            countryCode: cleanCountryCode,
+            phone: formData.phone,
+            fullPhone: cleanCountryCode + ' ' + formData.phone,
+            attending: formData.attending
+        };
+
+
         try {
-            await fetch('https://script.google.com/macros/s/AKfycby1SQDyP0GFVd0E--QMxjmqH0c_uu8mu_MOvDQtGF_BRsXMS1hzGSc-sXjzHgT6aDEG/exec', {
+            await fetch('https://script.google.com/macros/s/AKfycbzmQaeDZMJqIHEEw3rrxtLzScUs3kx66TwvNtTvEp3bS363SlfbYDuE_t0oLsM7auJU/exec', {
                 method: 'POST',
                 mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    name: formData.name,
-                    email: formData.email,
-                    phone: formData.countryCode + ' ' + formData.phone,
-                    attending: formData.attending
-                })
+                body: JSON.stringify(dataToSend)
             });
             setStatus('success');
             setFormData({ name: '', email: '', countryCode: '+57', phone: '', attending: 'yes', guests: '1', message: '' });
+
+            // Guardar en localStorage para evitar reenvíos inmediatos
+            localStorage.setItem(`rsvp_${formData.email}`, timestamp);
+
         } catch {
             setStatus('idle');
             alert('Hubo un error al enviar. Por favor intenta de nuevo.');
@@ -40,7 +126,13 @@ const Rsvp = () => {
     };
 
     const handleChange = (e) => {
-        setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+
+        // Limpiar error del campo cuando el usuario comience a escribir
+        if (errors[name]) {
+            setErrors(prev => ({ ...prev, [name]: '' }));
+        }
     };
 
     return (
@@ -74,33 +166,39 @@ const Rsvp = () => {
                 ) : (
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-sm uppercase tracking-wider mb-2 text-gray-500">Nombre Completo</label>
+                            <label className="block text-sm uppercase tracking-wider mb-2 text-gray-500">Nombre Completo*</label>
                             <input
                                 type="text"
                                 name="name"
                                 required
                                 value={formData.name}
                                 onChange={handleChange}
-                                className="w-full p-3 border-b border-gray-300 focus:border-dusty-olive outline-none transition-colors bg-transparent"
+                                className={`w-full p-3 border-b border-gray-300 focus:border-dusty-olive outline-none transition-colors bg-transparent ${
+                                    errors.name ? 'border-red-500 focus:border-red-500' : ''
+                                }`}
                                 placeholder="Ej. Juan Pérez"
                             />
+                            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-sm uppercase tracking-wider mb-2 text-gray-500">Email</label>
+                            <label className="block text-sm uppercase tracking-wider mb-2 text-gray-500">Email*</label>
                             <input
                                 type="email"
                                 name="email"
                                 required
                                 value={formData.email}
                                 onChange={handleChange}
-                                className="w-full p-3 border-b border-gray-300 focus:border-dusty-olive outline-none transition-colors bg-transparent"
+                                className={`w-full p-3 border-b border-gray-300 focus:border-dusty-olive outline-none transition-colors bg-transparent ${
+                                    errors.email ? 'border-red-500 focus:border-red-500' : ''
+                                }`}
                                 placeholder="juan@ejemplo.com"
                             />
+                            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                         </div>
 
                         <div>
-                            <label className="block text-sm uppercase tracking-wider mb-2 text-gray-500">Teléfono</label>
+                            <label className="block text-sm uppercase tracking-wider mb-2 text-gray-500">Teléfono*</label>
                             <div className="flex gap-3">
                                 <select
                                     name="countryCode"
@@ -117,24 +215,30 @@ const Rsvp = () => {
                                     required
                                     value={formData.phone}
                                     onChange={handleChange}
-                                    className="flex-1 p-3 border-b border-gray-300 focus:border-dusty-olive outline-none transition-colors bg-transparent"
-                                    placeholder="300 123 4567"
+                                    className={`flex-1 p-3 border-b border-gray-300 focus:border-dusty-olive outline-none transition-colors bg-transparent ${
+                                        errors.phone ? 'border-red-500 focus:border-red-500' : ''
+                                    }`}
+                                    placeholder={formData.countryCode === '+57' ? '300 123 4567' : '555 123 4567'}
                                 />
                             </div>
+                            {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
                         </div>
 
                         <div className="grid grid-cols-2 gap-6">
                             <div>
-                                <label className="block text-sm uppercase tracking-wider mb-2 text-gray-500">Asistencia</label>
+                                <label className="block text-sm uppercase tracking-wider mb-2 text-gray-500">Asistencia*</label>
                                 <select
                                     name="attending"
                                     value={formData.attending}
                                     onChange={handleChange}
-                                    className="w-full p-3 border-b border-gray-300 focus:border-dusty-olive outline-none bg-transparent"
+                                    className={`w-full p-3 border-b border-gray-300 focus:border-dusty-olive outline-none bg-transparent ${
+                                        errors.attending ? 'border-red-500 focus:border-red-500' : ''
+                                    }`}
                                 >
                                     <option value="yes">Sí, asistiré</option>
                                     <option value="no">No podré asistir</option>
                                 </select>
+                                {errors.attending && <p className="text-red-500 text-sm mt-1">{errors.attending}</p>}
                             </div>
 
 
