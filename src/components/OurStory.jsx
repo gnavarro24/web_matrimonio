@@ -2,6 +2,7 @@ import SectionWrapper from './SectionWrapper';
 import { motion } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
 import fotoWeb from '../assets/decor/Save_the_Date.png';
+import dancingImage from '../assets/decor/dancing.jpg';
 
 const useTypewriterOnView = (text, speed = 100, delay = 300) => {
     const [displayed, setDisplayed] = useState('');
@@ -37,8 +38,7 @@ const useTypewriterOnView = (text, speed = 100, delay = 300) => {
 
 const OurStory = () => {
     const calculateTimeLeft = () => {
-        // Fecha de la boda: 20 de marzo de 2027 a las 4:00 PM (hora Colombia)
-        const weddingDate = new Date("2027-03-20T16:00:00-05:00"); // 4 PM GMT-5 Colombia
+        const weddingDate = new Date("2027-03-20T16:00:00-05:00");
         const difference = weddingDate.getTime() - new Date().getTime();
         let timeLeft = {};
 
@@ -88,7 +88,7 @@ const OurStory = () => {
                 ))}
             </div>
         </section>
-        <SectionWrapper id="story" className="bg-cream pt-10 pb-10">
+        <SectionWrapper id="story" className="bg-cream pt-10 pb-10 bg-cover bg-center bg-no-repeat" style={{backgroundImage: `linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)), url(${dancingImage})`}}>
             <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-1 gap-12 items-center">
                 {/*<div className="order-2 md:order-1">
                     <div>

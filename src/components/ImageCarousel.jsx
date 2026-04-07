@@ -94,23 +94,19 @@ const ImageCarousel = ({
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
         >
-            <div className="relative w-full h-full">
-                <AnimatePresence mode="wait">
-                    <motion.div
+            <div className="relative w-full" style={{ aspectRatio: '4 / 3' }}>
+                <AnimatePresence mode="popLayout" initial={false}>
+                    <motion.img
                         key={currentIndex}
-                        initial={{ opacity: 0, x: 300 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -300 }}
-                        transition={{ duration: 0.5, ease: "easeInOut" }}
-                        className="relative w-full h-full"
-                    >
-                        <img
-                            src={images[currentIndex].src}
-                            alt={images[currentIndex].alt || `Imagen ${currentIndex + 1}`}
-                            className="w-full h-full object-contain"
-                            loading="lazy"
-                        />
-                    </motion.div>
+                        src={images[currentIndex].src}
+                        alt={images[currentIndex].alt || `Imagen ${currentIndex + 1}`}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
+                        className="absolute inset-0 w-full h-full object-cover"
+                        loading="lazy"
+                    />
                 </AnimatePresence>
 
                 {showControls && images.length > 1 && (

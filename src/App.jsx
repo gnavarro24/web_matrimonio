@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
+import VideoSection from './components/VideoSection';
 import OurStory from './components/OurStory';
 import Gallery from './components/Gallery';
 import EventDetails from './components/EventDetails';
@@ -72,6 +73,10 @@ function App() {
         <div className="min-h-screen bg-porcelain relative overflow-x-hidden">
             <Navbar />
             <Hero videoShouldPlay={!showModal} />
+
+            <div className="relative">
+                <VideoSection />
+            </div>
 
             <div className="relative">
                 <OurStory />
