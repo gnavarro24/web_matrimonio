@@ -15,9 +15,21 @@ import SimpleAudioTest from './components/SimpleAudioTest';
 import gipsyKingsAudio from './assets/decor/gipsy_kings-volare-2min.mp3';
 
 function App() {
-    const [showModal, setShowModal] = useState(false);
+    const [showModal, setShowModal] = useState(true);
     const [audioEnabled, setAudioEnabled] = useState(false);
     const audioPlayerRef = useRef(null);
+
+    // Bloquear scroll mientras el modal está abierto
+    useEffect(() => {
+        if (showModal) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [showModal]);
 
     // Verificar al cargar si ya se dio permiso antes
     useEffect(() => {
@@ -71,6 +83,7 @@ function App() {
 
     return (
         <div className="min-h-screen bg-porcelain relative overflow-x-hidden">
+            <div style={{ visibility: showModal ? 'hidden' : 'visible' }}>
             <Navbar />
             <Hero videoShouldPlay={!showModal} />
 
@@ -100,6 +113,7 @@ function App() {
 
             {/* <Faq /> */}
             <Footer />
+            </div>
 
             {/* Modal de bienvenida */}
             <WelcomeModal

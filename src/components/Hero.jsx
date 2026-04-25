@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import videoExample from '../assets/decor/video_web.mp4';
-import heroImage from '../assets/decor/postcard_save_the_date_main.jpg';
+import heroImage from '../assets/decor/postcard_save_the_date_gus_gera.jpg';
 
 const useTypewriter = (text, speed = 100, delay = 1500) => {
     const [displayed, setDisplayed] = useState('');
@@ -41,14 +40,6 @@ const Hero = ({ videoShouldPlay = false }) => {
         <header id="home" className="relative h-[75vh] md:h-screen flex items-center justify-center overflow-clip">
             {/* Background Video with Overlay */}
             <div className="absolute inset-0 z-0">
-                {/* <video
-                    ref={videoRef}
-                    src={videoExample}
-                    loop
-                    muted
-                    playsInline
-                    className="w-full h-full object-cover"
-                /> */}
                 <img
                     src={heroImage}
                     alt="Save the Date"

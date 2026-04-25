@@ -2,7 +2,7 @@ import SectionWrapper from './SectionWrapper';
 import ImageCarousel from './ImageCarousel';
 import { motion } from 'framer-motion';
 
-import postCardSaveTheDateGusGera from '../assets/decor/postcard_save_the_date_gus_gera.jpg';
+import postCardSaveTheDateMain from '../assets/decor/postcard_save_the_date_main.jpg';
 import saveTheDatePostCard from '../assets/decor/save_the_date_postcard.jpg';
 import stratCoin from '../assets/decor/strat_coin.jpg';
 import gallery1 from '../assets/decor/gallery_1.jpg';
@@ -27,11 +27,13 @@ import gallery19 from '../assets/decor/gallery_19.jpg';
 import gallery20 from '../assets/decor/gallery_20.jpg';
 import gallery21 from '../assets/decor/gallery_21.jpg';
 import gallery22 from '../assets/decor/gallery_22.jpg';
+import gallery23 from '../assets/decor/gallery_23.jpg';
+import gallery24 from '../assets/decor/gallery_24.jpg';
 
 const Gallery = () => {
     const images = [
         {
-            src: postCardSaveTheDateGusGera
+            src: postCardSaveTheDateMain
         },
         {
             src: saveTheDatePostCard,
@@ -66,7 +68,9 @@ const Gallery = () => {
         { src: gallery19 },
         { src: gallery20 },
         { src: gallery21 },
-        { src: gallery22 }
+        { src: gallery22 },
+        { src: gallery23 },
+        { src: gallery24 }
     ];
 
     return (

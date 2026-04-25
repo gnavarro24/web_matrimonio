@@ -5,6 +5,7 @@ const SimpleAudioTest = ({ src }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [wasPlayingBeforeHide, setWasPlayingBeforeHide] = useState(false);
     const audioRef = useRef(null);
+    const wasPlayingBeforeVideoRef = useRef(false);
 
     const handleButtonClick = () => {
         const audio = audioRef.current;
@@ -52,6 +53,34 @@ const SimpleAudioTest = ({ src }) => {
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
     }, [wasPlayingBeforeHide]);
+
+    // Pausar música cuando se reproduce el video y reanudarla al detenerlo
+    useEffect(() => {
+        const handleVideoPlaying = () => {
+            const audio = audioRef.current;
+            if (!audio) return;
+            wasPlayingBeforeVideoRef.current = !audio.paused;
+            if (!audio.paused) {
+                audio.pause();
+            }
+        };
+
+        const handleVideoStopped = () => {
+            const audio = audioRef.current;
+            if (!audio) return;
+            if (wasPlayingBeforeVideoRef.current) {
+                audio.play().catch(() => {});
+                wasPlayingBeforeVideoRef.current = false;
+            }
+        };
+
+        window.addEventListener('video-playing', handleVideoPlaying);
+        window.addEventListener('video-stopped', handleVideoStopped);
+        return () => {
+            window.removeEventListener('video-playing', handleVideoPlaying);
+            window.removeEventListener('video-stopped', handleVideoStopped);
+        };
+    }, []);
 
     return (
         <div

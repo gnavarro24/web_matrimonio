@@ -12,14 +12,29 @@ const ImageCarousel = ({
 }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(autoPlay);
+    const [isInView, setIsInView] = useState(false);
     const [touchStart, setTouchStart] = useState(null);
     const [touchEnd, setTouchEnd] = useState(null);
     const intervalRef = useRef(null);
+    const containerRef = useRef(null);
 
     const minSwipeDistance = 50;
 
     useEffect(() => {
-        if (isPlaying && images.length > 1) {
+        const el = containerRef.current;
+        if (!el) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => setIsInView(entry.isIntersecting),
+            { threshold: 0.5 }
+        );
+        observer.observe(el);
+
+        return () => observer.disconnect();
+    }, []);
+
+    useEffect(() => {
+        if (isPlaying && isInView && images.length > 1) {
             intervalRef.current = setInterval(() => {
                 setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
             }, autoPlayInterval);
@@ -30,7 +45,7 @@ const ImageCarousel = ({
                 clearInterval(intervalRef.current);
             }
         };
-    }, [isPlaying, autoPlayInterval, images.length]);
+    }, [isPlaying, isInView, autoPlayInterval, images.length]);
 
     const goToPrevious = () => {
         setCurrentIndex((prevIndex) =>
@@ -87,6 +102,7 @@ const ImageCarousel = ({
 
     return (
         <div
+            ref={containerRef}
             className={`relative w-full overflow-hidden rounded-lg shadow-lg group ${className}`}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
