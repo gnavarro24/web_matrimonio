@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
-import Countdown from './Countdown';
 
 const START = 11; // segundos: se salta el intro del save the date
 const videoNavelas = `https://pub-e8a7374af923467a80b60dbbb3742ea9.r2.dev/theNavelas.mp4#t=${START}`;
@@ -84,9 +83,9 @@ const VideoHero = ({ videoShouldPlay = false }) => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.8, duration: 1 }}
-                    className="text-[2.75rem] leading-[1.1] min-[400px]:text-6xl sm:text-8xl md:text-[9rem] font-anastasia overflow-visible pr-2 drop-shadow-lg"
+                    className="text-[3rem] leading-[1.1] font-anastasia overflow-visible pr-2 drop-shadow-lg"
                 >
-                    Gustavo &amp; Geraldine
+                    We are getting married
                 </motion.p>
 
                 <motion.div
@@ -95,9 +94,9 @@ const VideoHero = ({ videoShouldPlay = false }) => {
                     transition={{ delay: 1.3, duration: 0.8 }}
                     className="mt-4 sm:mt-6 drop-shadow-md"
                 >
-                    <p className="text-5xl sm:text-6xl md:text-7xl font-cormorant">20.03.27</p>
-                    <p className="text-xl sm:text-2xl md:text-3xl mt-1 mb-6 sm:mb-8 font-cormorant">Medellín, Colombia</p>
-                    <Countdown className="gap-6 sm:gap-10 md:gap-12" />
+                    <p className="text-5xl sm:text-8xl md:text-[9rem] leading-tight font-anastasia overflow-visible pr-2">Gustavo &amp; Geraldine</p>
+                    <p className="text-5xl sm:text-6xl md:text-7xl mt-2 sm:mt-4 font-cormorant">20.03.27</p>
+                    <p className="text-xl sm:text-2xl md:text-3xl mt-1 font-cormorant">Medellín, Colombia</p>
                 </motion.div>
             </div>
 

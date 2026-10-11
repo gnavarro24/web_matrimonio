@@ -9,6 +9,8 @@ export default defineConfig({
   },
   server: {
     host: true,
+    // API de regalos: en local la sirve `npx wrangler dev` (puerto 8787)
+    proxy: { '/api': 'http://localhost:8787' },
     allowedHosts: [
       'localhost',
       '127.0.0.1',

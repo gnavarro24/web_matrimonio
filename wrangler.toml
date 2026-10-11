@@ -1,7 +1,19 @@
 name = "web-matrimonio"
 compatibility_date = "2024-01-01"
-main = "./dist/index.html"
+main = "./worker/index.js"
 
 [assets]
 directory = "./dist"
+binding = "ASSETS"
 not_found_handling = "single-page-application"
+run_worker_first = ["/api/*"]
+
+# Contadores de la lluvia de sobres (/api/regalos)
+[[durable_objects.bindings]]
+name = "REGALOS"
+class_name = "Regalos"
+
+# Registra la clase Regalos; no hay tablas ni base de datos que crear o administrar.
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Regalos"]
