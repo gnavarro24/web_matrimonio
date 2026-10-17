@@ -117,8 +117,8 @@ function Regalos() {
                     <span className="font-anastasia">fund</span>
                 </h1>
                 <p className="max-w-2xl mx-auto mt-6 text-xl md:text-2xl font-cormorant italic font-medium">
-                    Tu presencia es nuestro mejor regalo. Si además quieres empujarnos hasta Italia,
-                    elige tu plan favorito y súmate a la aventura.
+                    Tu presencia es nuestro mejor regalo. Si además quieres tener un detalle con nosotros, elige tu plan
+                    favorito y ayúdanos a llegar a la meta de nuestra luna de miel o de nuestro primer hogar.
                 </p>
                 <p className="mt-7 inline-block -rotate-3 border-2 border-dusty-olive p-[5px] text-[#586748]" aria-live="polite">
                     <span className="flex items-baseline gap-2.5 border border-dusty-olive px-5 py-2.5">

@@ -35,7 +35,7 @@ const questions = [
     },
     {
         question: "¿Qué les podemos regalar?",
-        answer: "Tu presencia es el mejor regalo. Si deseas darnos algo más, tenemos un Honeymoon fund para nuestra luna de miel.",
+        answer: "Tu presencia es nuestro mejor regalo. Si además quieres tener un detalle con nosotros, en la página de Regalos puedes ayudarnos a llegar a la meta de nuestra luna de miel o de nuestro primer hogar.",
     },
 ];
 

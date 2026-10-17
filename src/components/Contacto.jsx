@@ -2,11 +2,10 @@ import { MessageCircle, Mail, Instagram } from 'lucide-react';
 import SectionWrapper from './SectionWrapper';
 import logo from '../assets/decor/logo.png';
 
-// Contacto de la wedding planner. ⚠️ Por confirmar: llenar cuando Gustavo tenga sus datos.
-// Lo que quede en null no se muestra; sin ningún dato aparece el aviso de "pronto".
+// Contacto de la wedding planner. Lo que quede en null no se muestra.
 const planner = {
-    name: null, // 'Nombre Apellido'
-    whatsapp: null, // '+57 300 0000000'
+    name: 'Mariana Agudelo',
+    whatsapp: '+57 333 2939511',
     email: null,
     instagram: null, // sin @
 };
