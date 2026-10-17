@@ -3,7 +3,6 @@ import SectionWrapper from './SectionWrapper';
 import { motion } from 'framer-motion';
 import { Check, Loader2 } from 'lucide-react';
 import cuadroMonet from '../assets/decor/cuadro_monet.jpeg';
-import bustoItaliano from '../assets/decor/busto_italiano.png';
 
 const Rsvp = () => {
     const [formData, setFormData] = useState({

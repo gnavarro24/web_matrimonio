@@ -133,3 +133,58 @@ body {
   border: 2px solid white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+/* Telón entre páginas (PageVeil) */
+html.velo-llega { background: #413c22; }
+.velo {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  background: #413c22; color: #fffdf7;
+  transform: translateY(100%); visibility: hidden; pointer-events: none;
+}
+.velo-entra { transform: none; visibility: visible; pointer-events: auto; transition: transform .6s cubic-bezier(.76,0,.24,1); }
+.velo-cubre { transform: none; visibility: visible; pointer-events: auto; }
+.velo-sale { transform: translateY(-100%); visibility: visible; transition: transform .7s cubic-bezier(.76,0,.24,1); }
+.velo-mono { opacity: 0; transform: translateY(10px); }
+.velo-entra .velo-mono { opacity: 1; transform: none; transition: opacity .45s ease .2s, transform .45s ease .2s; }
+.velo-cubre .velo-mono { opacity: 1; transform: none; }
+.velo-sale .velo-mono { opacity: 0; transition: opacity .25s; }
+.velo-linea { transform: scaleX(0); }
+.velo-entra .velo-linea { transform: scaleX(1); transition: transform .5s ease .3s; }
+.velo-cubre .velo-linea { transform: scaleX(1); }
+
+/* Títulos de sección que se descubren al entrar en pantalla (SectionWrapper) */
+.revela h2 { clip-path: inset(0 0 100% 0); }
+.revela.on h2 { animation: revela-titulo 1s cubic-bezier(.7,0,.2,1) .15s forwards; }
+/* El final con márgenes negativos no recorta los rasgos de la letra script */
+@keyframes revela-titulo { to { clip-path: inset(-30% -10% -40% -10%); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .revela h2 { clip-path: none; }
+  .revela.on h2 { animation: none; }
+}
+
+/* Página "Nuestra historia" (/invitacion/historia) */
+.kb{animation:kb 18s ease-out forwards}
+@keyframes kb{from{transform:scale(1.12)}to{transform:scale(1)}}
+.drop{opacity:0;transform:translateY(-40px) rotate(-4deg);animation:drop 1.1s cubic-bezier(.2,.8,.2,1) .3s forwards}
+@keyframes drop{to{opacity:1;transform:translateY(0) rotate(-1deg)}}
+.cue{animation:cue 2.2s ease-in-out infinite}
+@keyframes cue{0%,100%{transform:translateY(0);opacity:.6}50%{transform:translateY(8px);opacity:1}}
+.rev .up{opacity:0;transform:translateY(28px)}
+.rev .mask{clip-path:inset(0 0 100% 0)}
+.rev .pola{opacity:0;transform:translateY(60px) rotate(6deg) scale(.94)}
+.rev .dev{filter:sepia(1) brightness(1.5) blur(6px) contrast(.7)}
+.rev.on .up{animation:up .9s cubic-bezier(.2,.7,.2,1) forwards}
+.rev.on .mask{animation:mask 1s cubic-bezier(.7,0,.2,1) forwards}
+.rev.on .pola{animation:pola 1.2s cubic-bezier(.2,.8,.2,1) forwards}
+.rev.on .dev{animation:dev 2.6s ease .5s forwards}
+@keyframes up{to{opacity:1;transform:none}}
+@keyframes mask{to{clip-path:inset(-20% -10% -30% -10%)}}
+@keyframes pola{to{opacity:1;transform:none}}
+@keyframes dev{to{filter:sepia(0) brightness(1) blur(0) contrast(1)}}
+.film{animation:film 120s linear infinite}
+@keyframes film{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion: reduce){
+    .kb,.drop,.cue,.film{animation:none!important;opacity:1!important;transform:none!important}
+    .rev .up,.rev .mask,.rev .pola,.rev .dev{opacity:1!important;transform:none!important;clip-path:none!important;filter:none!important;animation:none!important}
+}

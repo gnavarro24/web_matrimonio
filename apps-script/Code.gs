@@ -3,17 +3,17 @@
  *
  * Lee y escribe la pestaña "Invitados" de la hoja de cálculo:
  *
- *   A Código | B Nombre | C Cupos | D Enlace | E Asiste | F Asistentes | G Mensaje | H Respondió
+ *   A Código | B Nombre | C Cupos | D Enlace | E Asiste | F Asistentes | G Mensaje | H Respondió | I Alergias
  *
  * Ustedes llenan Nombre y Cupos; `generarEnlaces` rellena Código y Enlace;
- * las columnas E–H las escribe la web cuando el invitado confirma.
+ * las columnas E–I las escribe la web cuando el invitado confirma.
  *
  * El enlace de cada invitado solo lleva su código:  …/invitacion?i=ABC234
  * El nombre y los cupos no viajan en la URL: la web los pide aquí con el código,
  * así que nadie puede verlos ni cambiarlos editando el enlace.
  *
  * Cada invitado tiene UNA fila: confirmar, cambiar de opinión o pulsar varias veces
- * sobrescribe sus columnas E–H; nunca se crean filas nuevas.
+ * sobrescribe sus columnas E–I; nunca se crean filas nuevas.
  */
 
 // ID de la hoja: lo que va entre /d/ y /edit en su URL.
@@ -22,7 +22,7 @@ const SHEET_ID = 'PEGAR_ID_DE_LA_HOJA';
 const SITIO = 'https://PEGAR_DOMINIO/invitacion';
 
 const PESTANA = 'Invitados';
-const ENCABEZADOS = ['Código', 'Nombre', 'Cupos', 'Enlace', 'Asiste', 'Asistentes', 'Mensaje', 'Respondió'];
+const ENCABEZADOS = ['Código', 'Nombre', 'Cupos', 'Enlace', 'Asiste', 'Asistentes', 'Mensaje', 'Respondió', 'Alergias'];
 const MAX_MENSAJE = 500;
 // Sin 0/O, 1/I/L: los códigos se pueden dictar sin confusiones.
 const ALFABETO = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -64,6 +64,7 @@ function invitado_(datos) {
     cupos: Math.max(1, parseInt(datos[2], 10) || 1),
     asiste: String(datos[4] || '').toLowerCase(), // '', 'si' o 'no'
     asistentes: parseInt(datos[5], 10) || 0,
+    alergias: String(datos[8] || ''), // vuelve a la web para no perderla al cambiar la respuesta
   };
 }
 
@@ -83,7 +84,7 @@ function doGet(e) {
   return json_(encontrado ? invitado_(encontrado.datos) : { ok: false, error: 'codigo' });
 }
 
-// POST { codigo, asiste: 'si' | 'no', asistentes, mensaje } → guarda la respuesta en la fila del invitado.
+// POST { codigo, asiste: 'si' | 'no', asistentes, mensaje, alergias } → guarda la respuesta en la fila del invitado.
 function doPost(e) {
   let entrada;
   try {
@@ -107,7 +108,8 @@ function doPost(e) {
       return json_({ ok: false, error: 'asistentes' });
     }
 
-    hoja.getRange(encontrado.fila, 5, 1, 4).setValues([[entrada.asiste, asistentes, texto_(entrada.mensaje), new Date()]]);
+    const alergias = entrada.asiste === 'si' ? texto_(entrada.alergias) : '';
+    hoja.getRange(encontrado.fila, 5, 1, 5).setValues([[entrada.asiste, asistentes, texto_(entrada.mensaje), new Date(), alergias]]);
     return json_(invitado_(buscar_(hoja, entrada.codigo).datos));
   } finally {
     candado.releaseLock();

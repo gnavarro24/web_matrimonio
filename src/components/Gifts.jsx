@@ -4,6 +4,7 @@ import SectionWrapper from './SectionWrapper';
 const Gifts = () => (
     <SectionWrapper id="regalos" className="bg-cream py-16 md:py-24 scroll-mt-16">
         <div className="max-w-2xl mx-auto text-center">
+            <h2 className="mb-10 text-5xl md:text-6xl font-anastasia leading-tight text-black/80">Gifts</h2>
             <a
                 href="/invitacion/regalos"
                 className="group relative inline-block w-72 h-52 sm:w-80 sm:h-60 md:w-96 md:h-72 -rotate-2 text-dusty-olive transition-transform duration-500 ease-out hover:scale-105 hover:rotate-0 focus-visible:outline-none focus-visible:scale-105"
@@ -43,7 +44,7 @@ const Gifts = () => (
                     Per via aerea
                 </span>
                 <span className="absolute inset-x-0 bottom-[10%] flex flex-col items-center">
-                    <h2 className="text-4xl sm:text-[2.6rem] md:text-5xl text-black/80 font-anastasia whitespace-nowrap">Honeymoon fund</h2>
+                    <h3 className="text-4xl sm:text-[2.6rem] md:text-5xl text-black/80 font-anastasia whitespace-nowrap">Honeymoon fund</h3>
                     <span className="mt-1 md:mt-2 font-cormorant uppercase tracking-[0.25em] text-sm md:text-base border-b border-transparent group-hover:border-dusty-olive group-focus-visible:border-dusty-olive transition-colors duration-300">
                         Ver más
                     </span>

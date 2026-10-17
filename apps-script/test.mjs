@@ -6,7 +6,7 @@ import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
 export function cargar(filas) {
-    const celdas = [['Código', 'Nombre', 'Cupos', 'Enlace', 'Asiste', 'Asistentes', 'Mensaje', 'Respondió'], ...filas];
+    const celdas = [['Código', 'Nombre', 'Cupos', 'Enlace', 'Asiste', 'Asistentes', 'Mensaje', 'Respondió', 'Alergias'], ...filas];
     const hoja = {
         getLastRow: () => celdas.length,
         getRange: (fila, col, nFilas = 1, nCols = 1) => ({
@@ -37,7 +37,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     ]);
 
     // Consulta: el nombre y los cupos salen de la hoja, no de la URL
-    assert.deepEqual(s.get('abc234 '), { ok: true, nombre: 'Familia Pérez', cupos: 3, asiste: '', asistentes: 0 });
+    assert.deepEqual(s.get('abc234 '), { ok: true, nombre: 'Familia Pérez', cupos: 3, asiste: '', asistentes: 0, alergias: '' });
     assert.deepEqual(s.get('NOEXISTE'), { ok: false, error: 'codigo' });
     assert.deepEqual(s.get(''), { ok: false, error: 'codigo' }); // no debe coincidir con la fila sin código
     assert.deepEqual(s.get(undefined), { ok: false, error: 'codigo' });
@@ -54,13 +54,14 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     assert.equal(s.celdas[1][4], '', 'los intentos inválidos no escriben nada');
 
     // Confirmar, y luego cambiar la respuesta sobre la misma fila
-    assert.deepEqual(s.post({ codigo: 'abc234', asiste: 'si', asistentes: 2, mensaje: '=HYPERLINK("http://x")' }),
-        { ok: true, nombre: 'Familia Pérez', cupos: 3, asiste: 'si', asistentes: 2 });
+    assert.deepEqual(s.post({ codigo: 'abc234', asiste: 'si', asistentes: 2, mensaje: '=HYPERLINK("http://x")', alergias: '=Maní' }),
+        { ok: true, nombre: 'Familia Pérez', cupos: 3, asiste: 'si', asistentes: 2, alergias: "'=Maní" });
     assert.equal(s.celdas[1][6], '\'=HYPERLINK("http://x")', 'el mensaje no puede guardarse como fórmula');
     assert.ok(s.celdas[1][7] instanceof Date || typeof s.celdas[1][7] === 'object');
     assert.equal(s.get('ABC234').asiste, 'si');
     assert.deepEqual(s.post({ codigo: 'ABC234', asiste: 'no', asistentes: 3, mensaje: 'x'.repeat(900) }).asistentes, 0);
     assert.equal(s.celdas[1][6].length, 500);
+    assert.equal(s.celdas[1][8], '', 'quien no asiste no deja alergias guardadas');
     assert.equal(s.celdas[2][4], '', 'no toca filas de otros invitados');
 
     // Pulsar muchas veces confirmar / no asistir sobrescribe la misma fila: nunca crea registros

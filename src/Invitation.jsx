@@ -3,7 +3,9 @@ import Navbar from './components/Navbar';
 import VideoHero from './components/VideoHero';
 import TheDetails from './components/TheDetails';
 import Gifts from './components/Gifts';
-import Gallery from './components/Gallery';
+import Playlist from './components/Playlist';
+import NuestraHistoria from './components/NuestraHistoria';
+import Contacto from './components/Contacto';
 import Confirmacion from './components/Confirmacion';
 import WelcomeModal from './components/WelcomeModal';
 import SimpleAudioTest from './components/SimpleAudioTest';
@@ -19,8 +21,10 @@ const navLinks = [
 
 // Quien vuelve desde Detalles o Regalos ya abrió el sobre: va directo a la invitación.
 // Al entrar por el enlace o refrescar la página, el sobre se muestra de nuevo.
+// Volver con "atrás" (o "Regresar" en Detalles) tampoco lo muestra si el sobre ya se abrió en esta pestaña.
 const vieneDeAdentro = () => {
     const nav = performance.getEntriesByType('navigation')[0];
+    if (nav?.type === 'back_forward' && sessionStorage.getItem('sobre-abierto')) return true;
     if (nav?.type !== 'navigate' || !document.referrer) return false;
     const ref = new URL(document.referrer);
     return ref.origin === window.location.origin && ref.pathname.startsWith('/invitacion/');
@@ -47,6 +51,7 @@ function Invitation() {
 
     const handleCloseModal = () => {
         setShowModal(false);
+        sessionStorage.setItem('sobre-abierto', '1');
         // Llegando desde /invitacion/details con #rsvp: saltar a la sección tras abrir
         if (window.location.hash) {
             setTimeout(() => document.querySelector(window.location.hash)?.scrollIntoView(), 100);
@@ -61,7 +66,9 @@ function Invitation() {
                 <Confirmacion invitado={invitado} />
                 <TheDetails />
                 <Gifts />
-                <Gallery />
+                <Playlist />
+                <NuestraHistoria />
+                <Contacto />
             </div>
 
             <WelcomeModal

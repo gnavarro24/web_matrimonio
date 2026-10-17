@@ -1,4 +1,3 @@
-import { Heart } from 'lucide-react';
 import fondoMedellin from '../assets/decor/fondoMedellin.jpeg';
 
 const Footer = () => {

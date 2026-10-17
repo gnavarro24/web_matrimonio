@@ -20,6 +20,6 @@ http.createServer((req, res) => {
         const out = req.method === 'POST' ? s.post(body) : s.get(new URL(req.url, 'http://x').searchParams.get('codigo'));
         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }).end(JSON.stringify(out));
         if (req.method === 'POST') console.log(`${s.celdas.length - 1} filas en la hoja`);
-        if (req.method === 'POST') console.table(s.celdas.slice(1).map(([codigo, nombre, cupos, , asiste, asistentes, mensaje]) => ({ codigo, nombre, cupos, asiste, asistentes, mensaje })));
+        if (req.method === 'POST') console.table(s.celdas.slice(1).map(([codigo, nombre, cupos, , asiste, asistentes, mensaje, , alergias]) => ({ codigo, nombre, cupos, asiste, asistentes, mensaje, alergias })));
     });
 }).listen(8798, () => console.log('Hoja de prueba en http://localhost:8798'));

@@ -13,7 +13,7 @@ const readCode = () => {
 };
 
 // Regla de la boda: la palabra "Familia" al inicio del nombre nunca se muestra; va abreviada como "Flia."
-export const abreviarFamilia = (nombre = '') => nombre.replace(/^\s*familia\b\.?\s*/i, 'Flia. ');
+const abreviarFamilia = (nombre = '') => nombre.replace(/^\s*familia\b\.?\s*/i, 'Flia. ');
 
 // status: 'no-code' | 'loading' | 'invalid' | 'error' | 'ready'
 // guest: { nombre, cupos, asiste, asistentes } tal como está en la hoja

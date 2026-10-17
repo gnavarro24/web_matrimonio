@@ -1,11 +1,12 @@
 import Navbar from './components/Navbar';
 import SectionWrapper from './components/SectionWrapper';
 import Faq from './components/Faq';
+import { volver } from './volver';
 import bannerImage from './assets/decor/details_banner.jpg';
 import kissPhoto from './assets/decor/details_fondo_beso.jpg';
 import poolPhoto from './assets/decor/details_fondo_piscina.jpg';
 import {
-    MapPin, Car, CarTaxiFront, Hotel, Instagram, MessageCircle, ArrowUpRight,
+    MapPin, Car, CarTaxiFront, Hotel, Instagram, MessageCircle, ArrowUpRight, ArrowLeft,
 } from 'lucide-react';
 import {
     TimelineIconDefs, ArrowRight, ArrowDownLeft, WelcomeIcon, CeremonyIcon, CocktailIcon, DinnerIcon, CakeIcon, PartyIcon, FarewellIcon, MakeupIcon,
@@ -75,7 +76,7 @@ const dressCode = {
         { name: 'Beige', color: '#e3d5b8' },
     ],
     note: 'Te pedimos no usar estos tonos: están reservados.',
-    extraNote: 'Y, por favor, sin estampados tropicales.',
+    extraNote: 'Te agradecemos también evitar los estampados tropicales.',
     // Tablero de Pinterest con ejemplos (vacío = el botón no se muestra)
     pinterest: 'https://co.pinterest.com/gisettev08/the-guests-black-tie/?invite_code=98318ace22c1481db0191d711313831c&sender=966444538694802389',
 };
@@ -172,6 +173,13 @@ function Details() {
     return (
         <div id="top" className="min-h-screen bg-[#4a4529] text-[#f7f2e9] overflow-x-hidden">
             <Navbar navLinks={navLinks} />
+            <a
+                href="/invitacion"
+                onClick={volver}
+                className="fixed left-4 top-[88px] z-40 inline-flex items-center gap-2 min-h-[44px] px-4 bg-[#f7f2e9]/95 text-[#4a4529] border border-[#4a4529]/30 shadow-md font-sans text-xs font-bold uppercase tracking-[0.2em] transition-opacity hover:opacity-80"
+            >
+                <ArrowLeft size={16} /> Regresar
+            </a>
 
             <header className="relative h-[60svh] min-h-[380px] md:h-[75vh] flex items-start md:items-center justify-center overflow-hidden">
                 <img
@@ -284,7 +292,7 @@ function Details() {
                             ))}
                         </ul>
                         <p className={`mt-5 md:mt-6 ${body}`}>{dressCode.note}</p>
-                        <p className="mt-2 text-xl md:text-[23px] font-cormorant font-bold">{dressCode.extraNote}</p>
+                        <p className={`mt-1 ${body}`}>{dressCode.extraNote}</p>
                     </div>
                     {dressCode.pinterest && (
                         <a href={dressCode.pinterest} target="_blank" rel="noopener noreferrer" className="sm:self-center inline-flex items-center justify-center gap-3 min-h-[68px] px-5 md:px-10 py-3 bg-[#f7f2e9] text-[#4a4529] text-[22px] md:text-[26px] font-cormorant italic font-bold leading-tight shadow-[0_10px_28px_rgba(0,0,0,0.28)] transition-transform duration-300 hover:scale-[1.03]">
@@ -297,11 +305,16 @@ function Details() {
             <Section tone="beige" title="Recomendados">
                 <div className="max-w-[1040px] mx-auto text-center">
                     <Medallion><Hotel strokeWidth={1.2} className={medallionIcon} /></Medallion>
-                    <Label className="mt-4 md:mt-5 md:!text-[21px]">Hoteles</Label>
+                    <Label className="mt-4 md:mt-5 md:!text-[21px]">Estadía</Label>
                     <p className={`mt-2.5 max-w-[620px] mx-auto ${body}`}>
-                        Puedes reservar directamente en el hotel o Airbnb que prefieras. Te recomendamos hospedarte en{' '}
-                        <strong className="not-italic font-bold">El Poblado o en Envigado, por La Frontera</strong>, para estar a{' '}
-                        <strong className="not-italic font-bold">máximo 15 minutos</strong> del lugar.
+                        Puedes reservar directamente en el hotel o Airbnb que prefieras. Zonas en las que te recomendamos hospedarte:
+                    </p>
+                    <ul className={`mt-2 max-w-[620px] mx-auto ${body}`}>
+                        <li><strong className="not-italic font-bold">Medellín:</strong> El Poblado.</li>
+                        <li><strong className="not-italic font-bold">Envigado:</strong> La Frontera y alrededores de Viva Envigado.</li>
+                    </ul>
+                    <p className={`mt-2 max-w-[620px] mx-auto ${body}`}>
+                        Así estarás a <strong className="not-italic font-bold">máximo 15 minutos</strong> del lugar.
                     </p>
                     {/* Marco de doble línea, como el de Fecha y lugar */}
                     <div className="mt-7 md:mt-9 max-w-[560px] mx-auto border border-[#4a4529]/45 p-[5px] md:p-1.5">

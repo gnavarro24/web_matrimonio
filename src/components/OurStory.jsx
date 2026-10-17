@@ -1,7 +1,6 @@
 import SectionWrapper from './SectionWrapper';
 import { motion } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
-import fotoWeb from '../assets/decor/Save_the_Date.png';
 import Countdown from './Countdown';
 import dancingImage from '../assets/decor/dancing.jpg';
 

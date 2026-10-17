@@ -1,7 +1,8 @@
 import SectionWrapper from './SectionWrapper';
 import couplePhoto from '../assets/decor/details_pareja.jpg';
 import venuePhoto from '../assets/decor/details_lugar.jpg';
-import mirrorPhoto from '../assets/decor/details_espejo.webp';
+// Marco: foto real (Cooper Hewitt, dominio público) recortada, con la talla reducida.
+import framePhoto from '../assets/decor/details_marco.webp';
 import flowerShape from '../assets/decor/details_flor.webp';
 
 const Polaroid = ({ src, className }) => (
@@ -10,7 +11,7 @@ const Polaroid = ({ src, className }) => (
     </span>
 );
 
-// Composición: espejo dorado, flor con el título y dos polaroids encima.
+// Composición: espejo con marco dorado, flor con el título y dos polaroids encima.
 const TheDetails = () => (
     <SectionWrapper id="details" className="bg-[#413c22] py-16 md:py-24 scroll-mt-16">
         <div className="text-center">
@@ -18,11 +19,11 @@ const TheDetails = () => (
                 href="/invitacion/details"
                 className="group relative inline-block w-[min(21rem,100%)] sm:w-[26rem] md:w-[34rem] aspect-[545/555] text-[#413c22] transition-transform duration-500 ease-out hover:scale-105 focus-visible:outline-none focus-visible:scale-105"
             >
-                <img
-                    src={mirrorPhoto}
-                    alt=""
-                    className="absolute left-1/2 -top-[8%] h-[116%] w-auto max-w-none -translate-x-1/2 drop-shadow-[0_10px_18px_rgba(0,0,0,0.35)]"
-                />
+                <span aria-hidden="true" className="absolute left-1/2 -top-[8%] h-[116%] aspect-[880/1372] -translate-x-1/2">
+                    {/* Vidrio de espejo envejecido detrás de la abertura del marco */}
+                    <span className="absolute left-[19%] right-[18.5%] top-[32%] bottom-[21%] rounded-[50%] shadow-[inset_0_0_28px_rgba(0,0,0,0.55)] bg-[radial-gradient(ellipse_70%_60%_at_38%_30%,rgba(255,255,255,.22),transparent_60%),linear-gradient(160deg,#8d8a7b,#6f6c5d_45%,#4f4c3e)]" />
+                    <img src={framePhoto} alt="" className="absolute inset-0 w-full h-full drop-shadow-[0_18px_22px_rgba(0,0,0,0.5)]" />
+                </span>
 
                 <span className="absolute left-0 top-[17%] w-[70%] aspect-square flex items-center justify-center -rotate-[8deg]">
                     {/* La silueta va como máscara para poder darle color */}

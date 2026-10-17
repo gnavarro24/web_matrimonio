@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check, Heart, Loader2 } from 'lucide-react';
+import { CalendarHeart, Check, Heart, Loader2 } from 'lucide-react';
 import SectionWrapper from './SectionWrapper';
 import { RSVP_API } from '../useInvitado';
 
@@ -11,13 +11,13 @@ const btn = "w-full px-3 py-4 border border-dusty-olive uppercase tracking-[0.12
 const Confirmacion = ({ invitado }) => {
     const { code, guest, setGuest, status, reload } = invitado;
     const [editing, setEditing] = useState(false);
-    const [form, setForm] = useState({ asistentes: 1, mensaje: '' });
+    const [form, setForm] = useState({ asistentes: 1, alergias: '', mensaje: '' });
     const [sending, setSending] = useState(''); // 'si' | 'no': qué botón se está enviando
     const [submitError, setSubmitError] = useState('');
 
-    // Al cargar la invitación, proponer lo ya respondido o todos los cupos
+    // Al cargar la invitación, proponer lo ya respondido (o todos los cupos)
     useEffect(() => {
-        if (guest) setForm((f) => ({ ...f, asistentes: guest.asistentes || guest.cupos }));
+        if (guest) setForm((f) => ({ ...f, asistentes: guest.asistentes || guest.cupos, alergias: guest.alergias || f.alergias }));
     }, [guest]);
 
     const respond = async (asiste) => {
@@ -46,6 +46,14 @@ const Confirmacion = ({ invitado }) => {
                         <span className="font-cormorant">Confirma tu </span>
                         <span className="font-anastasia">asistencia</span>
                     </h2>
+
+                    {/* Fecha límite para confirmar. Editable: por ahora 31 de enero de 2027. */}
+                    <p className="mb-8 inline-flex flex-col items-center gap-1 bg-dusty-olive text-[#f7f2e9] px-8 sm:px-12 py-5 outline outline-1 outline-[#f7f2e9]/50 outline-offset-[-6px]">
+                        <span className="flex items-center gap-2 font-sans text-[11px] sm:text-xs font-bold uppercase tracking-[0.22em]">
+                            <CalendarHeart size={16} aria-hidden="true" /> Confirma antes del
+                        </span>
+                        <span className="font-cormorant font-semibold text-3xl sm:text-4xl leading-tight">31 de enero de 2027</span>
+                    </p>
 
                     {status === 'no-code' && (
                         <p className="text-xl font-cormorant text-black/70">
@@ -125,6 +133,19 @@ const Confirmacion = ({ invitado }) => {
                                     </div>
                                 </fieldset>
                             )}
+
+                            <div className="text-left">
+                                <label htmlFor="rsvp-alergias" className={label}>Alergias o restricciones alimentarias (opcional)</label>
+                                <textarea
+                                    id="rsvp-alergias"
+                                    rows={2}
+                                    maxLength={500}
+                                    placeholder={guest.cupos === 1 ? 'Ej.: vegetariana, alergia a los mariscos' : 'Ej.: Ana es vegetariana; Luis, alérgico a los mariscos'}
+                                    value={form.alergias}
+                                    onChange={(e) => setForm({ ...form, alergias: e.target.value })}
+                                    className={`${field} placeholder:text-gray-400 placeholder:italic`}
+                                />
+                            </div>
 
                             <div className="text-left">
                                 <label htmlFor="rsvp-mensaje" className={label}>Mensaje para los novios (opcional)</label>
