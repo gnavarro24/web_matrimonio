@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import heroImage from '../assets/decor/postcard_save_the_date_gus_gera.jpg';
+import heroImage from '../assets/decor/postcard_save_the_date_gus_gera.webp';
 
 const useTypewriter = (text, speed = 100, delay = 1500) => {
     const [displayed, setDisplayed] = useState('');

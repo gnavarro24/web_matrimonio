@@ -1,15 +1,17 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, ChevronDown } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import Navbar from './components/Navbar';
 import { volver } from './volver';
-import paris from './assets/decor/gallery_14.jpg';
 
-// Sesión de fotos (webp de 1400 px). Clave = número de la foto: '7525', '8005'…
-const sesion = Object.fromEntries(
-    Object.entries(import.meta.glob('./assets/decor/historia/*.webp', { eager: true, import: 'default' }))
-        .map(([ruta, url]) => [ruta.match(/(\d+)\.webp$/)[1], url]),
-);
+// Fotos sin repetir las de otras páginas. Prefijo = grupo, número = orden:
+// a = mosaico de arriba (propuesta en Las Vegas, carpeta "Modificadas con ai"),
+// s = save the date (las que no usan Detalles ni la invitación), p = propuesta (fila del medio de abajo).
+const todas = import.meta.glob('./assets/decor/collage/*.webp', { eager: true, import: 'default' });
+const grupo = (letra) => Object.keys(todas).filter((r) => r.split('/').pop().startsWith(letra)).sort().map((r) => todas[r]);
+const arriba = grupo('a'); // en móvil se ven 9
+const std = grupo('s');
+const abajo = [std.slice(0, 5), grupo('p'), std.slice(5, 10)]; // tres filas: save the date, propuesta, save the date
 
 const navLinks = [
     { title: "Invitación", href: "/invitacion" },
@@ -18,47 +20,44 @@ const navLinks = [
     { title: "RSVP", href: "/invitacion#rsvp" },
 ];
 
-// Fotos alrededor del texto: en móvil, tres arriba y tres abajo; desde lg, sueltas alrededor.
-const arriba = [
-    { src: sesion['7525'], alt: 'Geraldine y Gustavo de gala en la escalera', pos: 'lg:left-0 lg:top-0 lg:w-[230px]', rot: '-rotate-6' },
-    { src: sesion['7968'], alt: 'Geraldine y Gustavo compartiendo un plato de pasta', pos: 'lg:left-[24%] lg:-top-4 lg:w-[170px]', rot: 'rotate-3' },
-    { src: sesion['7653'], alt: 'Geraldine y Gustavo caminando por un jardín', pos: 'lg:right-0 lg:top-6 lg:w-[230px]', rot: 'rotate-[5deg]' },
-];
-const abajo = [
-    { src: sesion['7639'], alt: 'Geraldine y Gustavo sentados en la escalera con su perro', pos: 'lg:left-[3%] lg:bottom-0 lg:w-[215px]', rot: 'rotate-[4deg]' },
-    { src: sesion['8487'], alt: 'Geraldine y Gustavo jugando cartas', pos: 'lg:right-[24%] lg:-bottom-4 lg:w-[170px]', rot: '-rotate-3' },
-    { src: sesion['8291'], alt: 'Geraldine y Gustavo brindando junto a la piscina', pos: 'lg:right-[2%] lg:bottom-3 lg:w-[220px]', rot: '-rotate-[5deg]' },
-];
-// La cinta lleva toda la sesión.
-const cinta = Object.values(sesion).map((src) => ({ src, alt: '' })); // decorativa: son las mismas fotos de la sesión
+// Un solo párrafo: se lee en el celular. Texto de Gustavo, tal cual.
+const historia = '2019 fue el año en que nos conocimos pero nuestros sueños y planes nos llevarían a lugares diferentes. Tuvieron que pasar mudanzas, cambios de ciudad, nuevos trabajos y una pandemia, hasta que en 2022 una llamada de cumpleaños, un concierto de Maná, un viaje a Punta Cana, y Dios volvió a unir nuestras historias para darle una oportunidad a lo que había nacido años atrás. En 2025 nos dijimos que sí en Las Vegas, entre un concierto de Bruno Mars y una cita en uno de los edificios más altos del mundo. Y desde entonces hemos vivido uno de los años más maravillosos juntos, seguros de que Dios ya nos había escogido a cada uno para este camino.';
 
-// Bloque que se anima al entrar en pantalla: le pone "on" y el CSS (.rev en index.css) hace el resto.
-const Rev = ({ as = 'div', className = '', children, ...props }) => {
+// Las fotos aparecen de una en una: cada foto que entra en pantalla se pone en la cola, y la cola muestra una cada PAUSA ms.
+const PAUSA = 140;
+const quieto = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const useCola = () => {
+    const cola = useRef([]);
+    const timer = useRef(null);
+    useEffect(() => () => clearTimeout(timer.current), []);
+    return useCallback((mostrar) => {
+        if (quieto()) return mostrar();
+        cola.current.push(mostrar);
+        if (timer.current) return;
+        const siguiente = () => {
+            const f = cola.current.shift();
+            if (!f) { timer.current = null; return; }
+            f();
+            timer.current = setTimeout(siguiente, PAUSA);
+        };
+        siguiente();
+    }, []);
+};
+
+// Mosaico (diseño D): cada foto entra a la cola al verse y aparece con un leve zoom hacia atrás.
+const Foto = ({ src, encolar, className = '', diferida = false }) => {
     const [on, setOn] = useState(false);
-    const M = motion[as];
     return (
-        <M viewport={{ once: true, amount: 0.18 }} onViewportEnter={() => setOn(true)} className={`rev ${on ? 'on' : ''} ${className}`} {...props}>
-            {children}
-        </M>
+        <motion.div viewport={{ once: true, amount: 0.3 }} onViewportEnter={() => encolar(() => setOn(true))} className={`overflow-hidden ${className}`}>
+            <img src={src} alt="" loading={diferida ? 'lazy' : undefined} decoding="async" className={`block w-full h-full object-cover transition-[opacity,transform] duration-700 ease-out ${on ? 'opacity-100 scale-100' : 'opacity-0 scale-[1.08]'}`} />
+        </motion.div>
     );
 };
 
-const Foto = ({ src, alt, pos, rot, delay }) => (
-    <div className={`pola lg:absolute ${pos}`} style={{ animationDelay: delay }}>
-        <div className={`bg-porcelain p-2 pb-6 lg:p-3 lg:pb-10 shadow-[0_18px_40px_rgba(65,60,34,0.22)] transition-transform duration-500 hover:-translate-y-1.5 hover:rotate-0 ${rot}`}>
-            <div className="overflow-hidden aspect-[4/5] bg-[#e4e7d4]">
-                <img src={src} alt={alt} loading="lazy" className="dev block w-full h-full object-cover" style={{ animationDelay: delay }} />
-            </div>
-        </div>
-    </div>
-);
-
-const kicker = 'font-sans text-[11px] font-bold uppercase tracking-[0.3em] text-[#586748]';
-const tira = 'h-[22px] bg-[repeating-linear-gradient(90deg,transparent_0_10px,rgba(255,253,247,0.85)_10px_22px,transparent_22px_34px)] bg-[length:34px_10px] bg-repeat-x bg-[position:0_6px]';
-
 function Historia() {
+    const encolar = useCola();
     return (
-        <div id="top" className="min-h-screen bg-porcelain text-[#4a4529] overflow-x-hidden">
+        <div id="top" className="pagina-verde min-h-screen bg-[#4a4529] text-[#f7f2e9] overflow-clip">
             <Navbar navLinks={navLinks} />
             <a
                 href="/invitacion"
@@ -68,52 +67,36 @@ function Historia() {
                 <ArrowLeft size={16} /> Regresar
             </a>
 
-            <header className="relative z-0 overflow-hidden min-h-[760px] flex items-center justify-center px-5 pt-[150px] pb-[100px]">
-                <img src={paris} alt="" aria-hidden="true" className="kb absolute inset-0 -z-20 w-full h-full object-cover [object-position:50%_40%] grayscale contrast-[1.1]" />
-                <div aria-hidden="true" className="absolute inset-0 -z-10 bg-black/40" />
-                <div className="drop w-full max-w-[560px] bg-porcelain p-3 shadow-[0_24px_50px_rgba(0,0,0,0.45)]">
-                    <div className="border border-[#a7ad89] p-[5px]">
-                        <div className="border-2 border-dotted border-[#a7ad89]/80 px-7 py-14 text-center">
-                            <p className={kicker}>Nuestra historia</p>
-                            <h1 className="mt-3 font-anastasia text-[3.6rem] md:text-[4.75rem] leading-[1.05]">The Navelas</h1>
-                            <div aria-hidden="true" className="mt-4 flex items-center justify-center gap-3 text-[#586748]">
-                                <span className="w-12 h-px bg-current" />
-                                <span className="w-1.5 h-1.5 rotate-45 bg-current" />
-                                <span className="w-12 h-px bg-current" />
-                            </div>
-                            <p className="mt-[18px] font-cormorant italic text-2xl">Geraldine &amp; Gustavo · desde [año]</p>
-                        </div>
-                    </div>
+            <header className="relative pt-[72px]">
+                <div aria-hidden="true" className="grid grid-cols-3 md:grid-cols-6 gap-[3px] bg-[#3a361f]">
+                    {arriba.map((src, i) => <Foto key={src} src={src} encolar={encolar} diferida={i >= 9} className={`aspect-[3/4] ${i >= 9 ? 'hidden md:block' : ''}`} />)}
                 </div>
-                <ChevronDown aria-hidden="true" className="cue absolute left-1/2 bottom-7 -ml-3 text-porcelain" />
+                <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-56 md:h-72 bg-gradient-to-b from-transparent to-[#4a4529] to-[92%] pointer-events-none" />
+                <h1 className="absolute inset-x-0 -bottom-4 md:-bottom-6 text-center font-anastasia text-[3.5rem] md:text-[5.5rem] leading-[1.05] [text-shadow:0_2px_18px_rgba(0,0,0,0.45)]">Nuestra historia</h1>
             </header>
 
-            <Rev as="section" className="relative max-w-[1120px] mx-auto px-6 py-20 lg:py-0 lg:my-24 lg:min-h-[820px] lg:flex lg:items-center lg:justify-center">
-                <div className="grid grid-cols-3 gap-3 lg:contents">
-                    {arriba.map((f, i) => <Foto key={f.alt} {...f} delay={`${i * 150}ms`} />)}
-                </div>
-                <p className="up relative max-w-[460px] mx-auto my-14 lg:my-0 text-center font-cormorant italic font-medium text-[1.6rem] md:text-[1.9rem] leading-normal text-[#413c22] [animation-delay:200ms]">
-                    Queremos que seas parte de este capítulo tan importante en nuestras vidas, que brindes con nosotros,
-                    que rías con nosotros y que bailes hasta que la noche se vuelva recuerdo.
-                </p>
-                <div className="grid grid-cols-3 gap-3 lg:contents">
-                    {abajo.map((f, i) => <Foto key={f.alt} {...f} delay={`${450 + i * 150}ms`} />)}
-                </div>
-            </Rev>
+            <section className="max-w-[640px] mx-auto px-7 pt-10 md:pt-14 text-center">
+                <p className="font-cormorant italic font-medium text-[19px] md:text-[22px] leading-[1.65]">{historia}</p>
+            </section>
 
-            <Rev as="section" className="bg-[#413c22] text-porcelain pt-20 pb-[90px] text-center">
-                <p className={`up ${kicker} !text-[#a7ad89]`}>Momentos</p>
-                <h2 className="mask mt-2.5 font-anastasia text-5xl md:text-[64px] leading-[1.2]">Lo que llevamos vivido</h2>
-                <div className="group up mt-11 overflow-hidden bg-[#26230f] [animation-delay:300ms]">
-                    <div aria-hidden="true" className={tira} />
-                    <div className="film flex gap-3.5 w-max py-2 group-hover:[animation-play-state:paused]">
-                        {cinta.concat(cinta).map((f, i) => (
-                            <img key={i} src={f.src} alt={i < cinta.length ? f.alt : ''} aria-hidden={i >= cinta.length || undefined} loading="lazy" className="block w-[180px] h-[225px] md:w-[240px] md:h-[300px] object-cover sepia-[.25]" />
-                        ))}
-                    </div>
-                    <div aria-hidden="true" className={tira} />
+            <section className="max-w-[420px] mx-8 sm:mx-auto mt-7 bg-[#f7f2e9] text-[#4a4529] p-1 shadow-[0_12px_24px_rgba(0,0,0,0.3)]">
+                <div className="border border-[#4a4529]/35 px-5 pt-5 pb-4 text-center">
+                    <p className="font-cormorant italic font-semibold text-[17px] md:text-[19px] leading-[1.35]">
+                        Así como es de especial nuestra historia y seguramente tú has tenido un rol en ella, soñamos con que nos acompañes en nuestro día.
+                    </p>
+                    <p className="mt-3 font-cormorant font-bold uppercase tracking-[0.24em] text-[11px] text-[#586748]">Con amor</p>
+                    <p className="font-anastasia text-[2rem] md:text-[2.4rem] leading-[1.15] whitespace-nowrap">Gustavo &amp; Geraldine</p>
                 </div>
-            </Rev>
+            </section>
+
+            {/* Cada fila: 4 fotos en móvil, 5 desde md */}
+            <div aria-hidden="true" className="mt-10 flex flex-col gap-[3px]">
+                {abajo.map((fila, f) => (
+                    <div key={f} className="grid grid-cols-4 md:grid-cols-5 gap-[3px]">
+                        {fila.map((src, i) => <Foto key={src} src={src} encolar={encolar} diferida className={`aspect-square ${i === 4 ? 'hidden md:block' : ''}`} />)}
+                    </div>
+                ))}
+            </div>
         </div>
     );
 }

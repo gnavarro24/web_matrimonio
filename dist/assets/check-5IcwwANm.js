@@ -1,0 +1,1 @@
+import{h as t,i as o,r,p as c}from"./index-zlmqmo-U.js";import{c as s}from"./Navbar-DHBkXK3i.js";function i(){!t.current&&o();const[e]=r.useState(c.current);return e}const a=s("Check",[["path",{d:"M20 6 9 17l-5-5",key:"1gmf2c"}]]);export{a as C,i as u};

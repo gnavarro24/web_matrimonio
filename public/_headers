@@ -1,0 +1,11 @@
+# Caché en el navegador (assets de Cloudflare Workers).
+# /assets/*: nombres con hash de Vite, nunca cambian → un año.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Sin hash en el nombre: 30 días. Si se reemplaza un archivo, cambiarle el nombre o se verá el viejo hasta que caduque.
+/fonts/*
+  Cache-Control: public, max-age=2592000
+
+/video/*
+  Cache-Control: public, max-age=2592000

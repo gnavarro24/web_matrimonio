@@ -107,7 +107,7 @@ function Regalos() {
     const total = gifts.reduce((sum, g) => sum + (counts[g.id] || 0), 0);
 
     return (
-        <div id="top" className="min-h-screen bg-cream overflow-x-hidden">
+        <div id="top" className="min-h-screen bg-cream overflow-clip">
             <Navbar navLinks={navLinks} />
 
             <header className={`pt-28 md:pt-32 px-6 text-center ${ink}`}>

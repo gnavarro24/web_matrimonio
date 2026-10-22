@@ -46,7 +46,7 @@ const Gifts = () => (
                 <span className="absolute inset-x-0 bottom-[10%] flex flex-col items-center">
                     <h3 className="text-4xl sm:text-[2.6rem] md:text-5xl text-black/80 font-anastasia whitespace-nowrap">Honeymoon fund</h3>
                     <span className="mt-1 md:mt-2 font-cormorant uppercase tracking-[0.25em] text-sm md:text-base border-b border-transparent group-hover:border-dusty-olive group-focus-visible:border-dusty-olive transition-colors duration-300">
-                        Ver más
+                        Click aquí
                     </span>
                 </span>
             </a>

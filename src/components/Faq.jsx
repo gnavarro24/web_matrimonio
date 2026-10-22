@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Plus, Minus } from 'lucide-react';
 
+const enlace = "underline underline-offset-4 decoration-[color:var(--acc)] font-semibold transition-opacity hover:opacity-70";
+
 // Editable. Las respuestas repiten datos que ya están en la página de detalles:
 // si cambia la hora, el lugar o el código de vestimenta, actualizar también aquí.
 const questions = [
@@ -11,7 +13,7 @@ const questions = [
     },
     {
         question: "¿Cómo confirmo mi asistencia?",
-        answer: "Con el enlace personal que te enviamos: al final de la invitación está la sección «Confirma tu asistencia». Si tus planes cambian, puedes volver a entrar y cambiar tu respuesta.",
+        answer: <>Con el enlace personal que te enviamos: en la invitación está la sección <a href="/invitacion#rsvp" className={enlace}>«Confirma tu asistencia»</a>. Si tus planes cambian, puedes volver a entrar y cambiar tu respuesta.</>,
     },
     {
         question: "¿Puedo llevar acompañante?",
@@ -19,7 +21,7 @@ const questions = [
     },
     {
         question: "Si no puedo asistir, ¿puedo ceder mi cupo?",
-        answer: "Preparamos cada invitación pensando en ti, así que los cupos son personales y van a nombre propio: no se pueden transferir a otra persona. Si no puedes acompañarnos, cuéntanoslo en la confirmación; te vamos a extrañar.",
+        answer: "Los cupos son personales y van a nombre propio: no se pueden transferir a otra persona. Si no puedes acompañarnos, cuéntanoslo en la confirmación; te vamos a extrañar.",
     },
     {
         question: "¿Puedo llevar niños?",
@@ -35,7 +37,7 @@ const questions = [
     },
     {
         question: "¿Qué les podemos regalar?",
-        answer: "Tu presencia es nuestro mejor regalo. Si además quieres tener un detalle con nosotros, en la página de Regalos puedes ayudarnos a llegar a la meta de nuestra luna de miel o de nuestro primer hogar.",
+        answer: <>Tu presencia es nuestro mejor regalo. Si además quieres tener un detalle con nosotros, en la <a href="/invitacion/regalos" className={enlace}>página de Regalos</a> puedes ayudarnos a llegar a la meta de nuestra luna de miel o de nuestro primer hogar.</>,
     },
 ];
 

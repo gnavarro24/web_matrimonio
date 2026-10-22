@@ -19,20 +19,25 @@ const navLinks = [
     { title: "RSVP", href: "#rsvp" },
 ];
 
-// Quien vuelve desde Detalles o Regalos ya abrió el sobre: va directo a la invitación.
-// Al entrar por el enlace o refrescar la página, el sobre se muestra de nuevo.
-// Volver con "atrás" (o "Regresar" en Detalles) tampoco lo muestra si el sobre ya se abrió en esta pestaña.
+// Si el sobre ya se abrió en esta pestaña, no se muestra otra vez (atrás, "Regresar", refrescar…).
+// Sin excepción para "reload": Safari en iPhone reporta así el volver atrás cuando recarga la página.
+// Quien entra directo a una subpágina y luego pasa a la invitación tampoco lo ve (eso sí usa el referrer).
 const vieneDeAdentro = () => {
     const nav = performance.getEntriesByType('navigation')[0];
-    if (nav?.type === 'back_forward' && sessionStorage.getItem('sobre-abierto')) return true;
+    try {
+        if (sessionStorage.getItem('sobre-abierto')) return true;
+    } catch { /* sin sessionStorage: se decide por el referrer */ }
     if (nav?.type !== 'navigate' || !document.referrer) return false;
     const ref = new URL(document.referrer);
     return ref.origin === window.location.origin && ref.pathname.startsWith('/invitacion/');
 };
 
 function Invitation() {
-    const [showModal, setShowModal] = useState(() => !vieneDeAdentro());
-    const [audioEnabled, setAudioEnabled] = useState(false);
+    const [saltarSobre] = useState(vieneDeAdentro);
+    const [showModal, setShowModal] = useState(!saltarSobre);
+    const [revelado, setRevelado] = useState(saltarSobre); // la página se ve mientras el sobre se desvanece encima
+    // Sin sobre no hay toque que arranque la música: se monta igual (respeta la pausa guardada).
+    const [audioEnabled, setAudioEnabled] = useState(saltarSobre);
     const invitado = useInvitado();
 
     // Bloquear scroll mientras el modal está abierto
@@ -51,7 +56,7 @@ function Invitation() {
 
     const handleCloseModal = () => {
         setShowModal(false);
-        sessionStorage.setItem('sobre-abierto', '1');
+        try { sessionStorage.setItem('sobre-abierto', '1'); } catch { /* el sobre volverá a salir */ }
         // Llegando desde /invitacion/details con #rsvp: saltar a la sección tras abrir
         if (window.location.hash) {
             setTimeout(() => document.querySelector(window.location.hash)?.scrollIntoView(), 100);
@@ -59,10 +64,13 @@ function Invitation() {
     };
 
     return (
-        <div className="min-h-screen bg-porcelain relative overflow-x-hidden">
-            <div style={{ visibility: showModal ? 'hidden' : 'visible' }}>
+        <div className="min-h-screen bg-porcelain relative overflow-clip">
+            <div style={{ visibility: showModal && !revelado ? 'hidden' : 'visible' }}>
                 <Navbar navLinks={navLinks} />
-                <VideoHero videoShouldPlay={!showModal} />
+                {/* La portada se asienta (leve zoom hacia atrás) mientras se entra al sobre. */}
+                <div style={{ transform: revelado ? 'none' : 'scale(1.08)', transition: 'transform 1.6s cubic-bezier(.2,.7,.2,1)' }}>
+                    <VideoHero videoShouldPlay={!showModal} />
+                </div>
                 <Confirmacion invitado={invitado} />
                 <TheDetails />
                 <Gifts />
@@ -75,6 +83,7 @@ function Invitation() {
                 isOpen={showModal}
                 onClose={handleCloseModal}
                 onStartMusic={() => setAudioEnabled(true)}
+                onRevelar={() => setRevelado(true)}
                 envelope
                 guestName={invitado.guest?.nombre || ''}
             />

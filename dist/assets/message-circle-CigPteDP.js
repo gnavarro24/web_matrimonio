@@ -1,0 +1,1 @@
+import{c as e}from"./Navbar-DHBkXK3i.js";const t=e("ArrowUpRight",[["path",{d:"M7 7h10v10",key:"1tivn9"}],["path",{d:"M7 17 17 7",key:"1vkiza"}]]),r=e("MessageCircle",[["path",{d:"m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z",key:"v2veuj"}]]);export{t as A,r as M};

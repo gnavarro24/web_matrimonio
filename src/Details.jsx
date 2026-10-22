@@ -2,9 +2,9 @@ import Navbar from './components/Navbar';
 import SectionWrapper from './components/SectionWrapper';
 import Faq from './components/Faq';
 import { volver } from './volver';
-import bannerImage from './assets/decor/details_banner.jpg';
-import kissPhoto from './assets/decor/details_fondo_beso.jpg';
-import poolPhoto from './assets/decor/details_fondo_piscina.jpg';
+import bannerImage from './assets/decor/details_banner.webp';
+import kissPhoto from './assets/decor/details_fondo_beso.webp';
+import poolPhoto from './assets/decor/details_fondo_piscina.webp';
 import {
     MapPin, Car, CarTaxiFront, Hotel, Instagram, MessageCircle, ArrowUpRight, ArrowLeft,
 } from 'lucide-react';
@@ -29,7 +29,7 @@ const timeline = [
     { time: '4:30 PM', title: 'Ceremonia', icon: CeremonyIcon },
     { time: '5:30 PM', title: 'Cóctel', icon: CocktailIcon },
     { time: '7:00 PM', title: 'Cena', icon: DinnerIcon },
-    { time: '8:30 PM', title: 'Pastel', icon: CakeIcon },
+    { time: '8:30 PM', title: 'Postre', icon: CakeIcon },
     { time: '9:00 PM', title: 'Fiesta', icon: PartyIcon },
     { time: '2:00 AM', title: 'Despedida', icon: FarewellIcon },
 ];
@@ -44,8 +44,7 @@ const directions = [
 const partnerHotel = {
     name: 'Wake BioHotel',
     badge: 'Hotel aliado',
-    discount: '25 % de descuento',
-    text: 'Nos aliamos con Wake BioHotel para que vivas una experiencia de lujo. Reserva con nuestro enlace y recibe el descuento.',
+    text: 'Nos aliamos con Wake BioHotel para que vivas una experiencia de lujo. Reserva con nuestro enlace y recibe un descuento especial del 25 %.',
     link: 'https://be.synxis.com/?Hotel=97123&Chain=5154&Dest=DS&config=SBE_WAKE_BIOHOTEL_V1&theme=SBE_WAKE_BIOHOTEL_V1&locale=es-MX&arrive=2027-03-20&depart=2027-03-21&adult=1&child=0&group=GeraldineyGustavo',
 };
 
@@ -66,8 +65,8 @@ const dressCode = {
     style: 'Black Tie',
     intro: 'Será una noche de gala: queremos verte con tu mejor look, y listo para bailar hasta el final.',
     looks: [
-        { title: 'Donna', text: 'Vestido largo de gala.' },
-        { title: 'Uomo', text: 'Smoking todo negro.', note: 'Sin corbatín de colores.' },
+        { title: 'Donna', text: 'Vestido largo de gala' },
+        { title: 'Uomo', text: 'Smoking todo negro', note: 'Sin corbatín de colores.' },
     ],
     // Colores que los invitados deben evitar
     reserved: [
@@ -123,7 +122,7 @@ const Section = ({ tone = 'green', title, photo, photoClass = '', veil = 'opacit
     <SectionWrapper className={`relative z-0 overflow-hidden py-16 md:py-24 ${tones[tone]} ${className}`} {...rest}>
         {photo && (
             <>
-                <img src={photo} alt="" aria-hidden="true" className={`absolute inset-0 -z-20 w-full h-full object-cover ${photoClass}`} />
+                <img loading="lazy" decoding="async" src={photo} alt="" aria-hidden="true" className={`absolute inset-0 -z-20 w-full h-full object-cover ${photoClass}`} />
                 <div aria-hidden="true" className={`absolute inset-0 -z-10 bg-[#4a4529] ${veil}`} />
             </>
         )}
@@ -171,7 +170,7 @@ const Recommendation = ({ name, firstName, detail, badge, note, instagram, phone
 
 function Details() {
     return (
-        <div id="top" className="min-h-screen bg-[#4a4529] text-[#f7f2e9] overflow-x-hidden">
+        <div id="top" className="pagina-verde min-h-screen bg-[#4a4529] text-[#f7f2e9] overflow-clip">
             <Navbar navLinks={navLinks} />
             <a
                 href="/invitacion"
@@ -182,7 +181,7 @@ function Details() {
             </a>
 
             <header className="relative h-[60svh] min-h-[380px] md:h-[75vh] flex items-start md:items-center justify-center overflow-hidden">
-                <img
+                <img fetchpriority="high"
                     src={bannerImage}
                     alt="Gustavo y Geraldine"
                     className="absolute inset-0 w-full h-full object-cover [object-position:56%_55%]"
@@ -309,9 +308,9 @@ function Details() {
                     <p className={`mt-2.5 max-w-[620px] mx-auto ${body}`}>
                         Puedes reservar directamente en el hotel o Airbnb que prefieras. Zonas en las que te recomendamos hospedarte:
                     </p>
-                    <ul className={`mt-2 max-w-[620px] mx-auto ${body}`}>
-                        <li><strong className="not-italic font-bold">Medellín:</strong> El Poblado.</li>
-                        <li><strong className="not-italic font-bold">Envigado:</strong> La Frontera y alrededores de Viva Envigado.</li>
+                    <ul className={`mt-5 max-w-[620px] mx-auto grid grid-cols-2 gap-6 ${body}`}>
+                        <li><strong className="block not-italic font-bold">Medellín</strong> El Poblado</li>
+                        <li><strong className="block not-italic font-bold">Envigado</strong> La Frontera y alrededores de Viva Envigado</li>
                     </ul>
                     <p className={`mt-2 max-w-[620px] mx-auto ${body}`}>
                         Así estarás a <strong className="not-italic font-bold">máximo 15 minutos</strong> del lugar.
@@ -321,7 +320,6 @@ function Details() {
                         <div className="border border-[#4a4529]/45 px-5 py-8 md:px-10 md:py-10">
                             <p className={`text-xs font-sans font-bold uppercase tracking-[0.14em] ${accent}`}>{partnerHotel.badge}</p>
                             <p className={`mt-2.5 ${keyInfo}`}>{partnerHotel.name}</p>
-                            <p className={`mt-1.5 text-[22px] md:text-[26px] font-cormorant font-bold uppercase tracking-[0.14em] ${accent}`}>{partnerHotel.discount}</p>
                             <p className={`mt-3 ${body}`}>{partnerHotel.text}</p>
                             <a href={partnerHotel.link} target="_blank" rel="noopener noreferrer" className={`${btnFilled} mt-6 !px-6 !tracking-[0.2em]`}>
                                 Reservar con descuento <ArrowUpRight size={16} className="shrink-0" />

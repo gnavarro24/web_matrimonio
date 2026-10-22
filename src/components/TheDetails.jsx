@@ -1,13 +1,13 @@
 import SectionWrapper from './SectionWrapper';
-import couplePhoto from '../assets/decor/details_pareja.jpg';
-import venuePhoto from '../assets/decor/details_lugar.jpg';
+import couplePhoto from '../assets/decor/details_pareja.webp';
+import venuePhoto from '../assets/decor/details_lugar.webp';
 // Marco: foto real (Cooper Hewitt, dominio público) recortada, con la talla reducida.
 import framePhoto from '../assets/decor/details_marco.webp';
 import flowerShape from '../assets/decor/details_flor.webp';
 
 const Polaroid = ({ src, className }) => (
     <span className={`absolute block bg-[#f4f2ee] p-[2.2%] pb-[8%] shadow-[0_8px_18px_rgba(0,0,0,0.35)] ${className}`}>
-        <img src={src} alt="" className="block w-full aspect-square object-cover" />
+        <img loading="lazy" decoding="async" src={src} alt="" className="block w-full aspect-square object-cover" />
     </span>
 );
 
@@ -22,7 +22,7 @@ const TheDetails = () => (
                 <span aria-hidden="true" className="absolute left-1/2 -top-[8%] h-[116%] aspect-[880/1372] -translate-x-1/2">
                     {/* Vidrio de espejo envejecido detrás de la abertura del marco */}
                     <span className="absolute left-[19%] right-[18.5%] top-[32%] bottom-[21%] rounded-[50%] shadow-[inset_0_0_28px_rgba(0,0,0,0.55)] bg-[radial-gradient(ellipse_70%_60%_at_38%_30%,rgba(255,255,255,.22),transparent_60%),linear-gradient(160deg,#8d8a7b,#6f6c5d_45%,#4f4c3e)]" />
-                    <img src={framePhoto} alt="" className="absolute inset-0 w-full h-full drop-shadow-[0_18px_22px_rgba(0,0,0,0.5)]" />
+                    <img loading="lazy" decoding="async" src={framePhoto} alt="" className="absolute inset-0 w-full h-full drop-shadow-[0_18px_22px_rgba(0,0,0,0.5)]" />
                 </span>
 
                 <span className="absolute left-0 top-[17%] w-[70%] aspect-square flex items-center justify-center -rotate-[8deg]">

@@ -19,7 +19,7 @@ const Contacto = () => {
     const hayDatos = whatsapp || email || instagram;
     return (
         <SectionWrapper id="contacto" className="bg-[#413c22] text-[#f7f2e9] py-20 md:py-28 text-center scroll-mt-16">
-            <img src={logo} alt="G & G" className="mx-auto h-20 md:h-24 brightness-0 invert opacity-90" />
+            <img loading="lazy" decoding="async" src={logo} alt="G & G" className="mx-auto h-20 md:h-24 brightness-0 invert opacity-90" />
             <p className="mt-8 font-sans text-[11px] font-bold uppercase tracking-[0.3em] text-dry-sage">¿Tienes alguna pregunta?</p>
             <p className="max-w-xl mx-auto mt-4 text-xl md:text-2xl font-cormorant italic font-medium leading-relaxed">
                 Nuestra wedding planner te ayudará con todo lo que necesites{name ? ':' : '.'}
@@ -48,8 +48,6 @@ const Contacto = () => {
                 <p className="mt-6 font-sans text-xs font-bold uppercase tracking-[0.22em] text-dry-sage">Muy pronto compartiremos su contacto aquí</p>
             )}
 
-            <p className="mt-16 font-sans text-[11px] font-bold uppercase tracking-[0.3em] text-dry-sage">Con amor</p>
-            <p className="mt-2 font-anastasia text-5xl md:text-6xl leading-tight">Geraldine &amp; Gustavo</p>
         </SectionWrapper>
     );
 };

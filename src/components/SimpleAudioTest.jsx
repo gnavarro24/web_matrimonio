@@ -1,6 +1,14 @@
 import { useState, useRef, useEffect } from 'react';
 import { Play, Pause } from 'lucide-react';
 
+// La pausa del invitado se recuerda en la pestaña: al volver desde otra página la música sigue en pausa.
+const PAUSA = 'musica-pausada';
+const leerPausa = () => { try { return !!sessionStorage.getItem(PAUSA); } catch { return false; } };
+const guardarPausa = (pausada) => {
+    try { pausada ? sessionStorage.setItem(PAUSA, '1') : sessionStorage.removeItem(PAUSA); } catch { /* no se recuerda */ }
+};
+const VOLUMEN = 0.15; // ponytail: iOS ignora audio.volume; ahí suena al volumen del teléfono
+
 const SimpleAudioTest = ({ src }) => {
     const [isPlaying, setIsPlaying] = useState(false);
     const [wasPlayingBeforeHide, setWasPlayingBeforeHide] = useState(false);
@@ -14,16 +22,19 @@ const SimpleAudioTest = ({ src }) => {
         if (audio.paused) {
             audio.play();
             setIsPlaying(true);
+            guardarPausa(false);
         } else {
             audio.pause();
             setIsPlaying(false);
+            guardarPausa(true);
         }
     };
 
-    // Auto-reproducir al montar
+    // Auto-reproducir al montar, bajito, salvo que el invitado la haya pausado
     useEffect(() => {
         const audio = audioRef.current;
-        if (audio) {
+        if (audio) audio.volume = VOLUMEN;
+        if (audio && !leerPausa()) {
             setTimeout(() => {
                 audio.play().catch(() => {});
             }, 500);

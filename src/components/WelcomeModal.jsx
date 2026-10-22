@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import waxSealImage from '../assets/decor/sello_cera.png';
-import toscanaImage from '../assets/decor/toscana.jpg';
+import waxSealImage from '../assets/decor/sello_cera.webp';
+import toscanaImage from '../assets/decor/toscana.webp';
 
 // Pantalla de entrada de la invitación: sobre cerrado con el sello en la punta de la solapa,
 // sobre una foto de la Toscana desenfocada y oscurecida (scale-105 tapa el borde que deja el blur).
@@ -10,12 +10,14 @@ import toscanaImage from '../assets/decor/toscana.jpg';
 //
 // Animación (diseño del 2026-10-14): al cargar, el sobre cae, el sello se estampa y el nombre se escribe;
 // con el mouse, el sobre se inclina en 3D. Al tocar (el sello o cualquier parte), el sello se parte,
-// estallan hojitas, la solapa se abre, sube la tarjeta y el sobre cae. `paso` lleva la secuencia.
-const PASOS = [ // [ms desde el toque, paso]: 1 sello roto · 2 solapa abierta · 3 carta sube · 4 sobre cae
-    [0, 1], [380, 2], [1150, 3], [2350, 4],
+// estallan hojitas y la solapa se abre. Entrada (2026-10-17, sin tarjeta): la cámara "entra" al sobre,
+// que crece y se desvanece mientras el fondo se aclara y deja ver la portada. `paso` lleva la secuencia.
+const PASOS = [ // [ms desde el toque, paso]: 1 sello roto · 2 solapa abierta · 3 entrada al sobre
+    [0, 1], [380, 2], [1000, 3],
 ];
-const SOLAPA_ATRAS_MS = 760; // a mitad del giro la solapa pasa detrás de la carta
-const CIERRE_MS = 3100;
+const SOLAPA_ATRAS_MS = 760; // a mitad del giro la solapa pasa detrás del sobre
+const CIERRE_MS = 2200;
+const entrada = { duration: 1, ease: [0.55, 0, 0.9, 0.45] }; // acelera, como lanzarse hacia adentro
 
 const SELLO = { left: '50%', top: '55.6%' }; // punta de la solapa
 const mitadIzq = 'polygon(0 0,52% 0,44% 30%,55% 52%,46% 74%,52% 100%,0 100%)';
@@ -32,18 +34,16 @@ const polvo = Array.from({ length: 14 }, (_, i) => ({
     x: `${(i * 37 + 11) % 100}%`, y: `${40 + ((i * 53) % 60)}%`, s: 2 + (i % 3), dur: 7 + (i % 5) * 1.6, delay: i * 1.3,
 }));
 
-const salida = { duration: 0.8, ease: [0.5, 0, 0.75, 0] };
-
 const Envelope = ({ guestName, paso, solapaAtras, tilt }) => {
     const sinMovimiento = useReducedMotion();
-    const cae = paso >= 4 ? { y: '130%', rotate: 5, opacity: 0 } : { y: 0, rotate: 0, opacity: 1 };
+    const fondo = `transition-opacity duration-700 delay-300 ${paso >= 3 ? 'opacity-0' : ''}`; // el sobre arranca primero
     return (
         <>
-            <img src={toscanaImage} alt="" className="absolute inset-0 w-full h-full object-cover [object-position:38%_50%] md:[object-position:50%_60%] blur-[5px] scale-105" />
-            <div className="absolute inset-0 bg-[rgba(20,25,15,0.86)]" />
+            <img fetchpriority="high" src={toscanaImage} alt="" className={`absolute inset-0 w-full h-full object-cover [object-position:38%_50%] md:[object-position:50%_60%] blur-[5px] scale-105 ${fondo}`} />
+            <div className={`absolute inset-0 bg-[rgba(20,25,15,0.86)] ${fondo}`} />
 
             {!sinMovimiento && (
-                <div aria-hidden="true" className="absolute inset-0 pointer-events-none">
+                <div aria-hidden="true" className={`absolute inset-0 pointer-events-none ${fondo}`}>
                     {polvo.map((p, i) => (
                         <motion.span
                             key={i}
@@ -57,7 +57,12 @@ const Envelope = ({ guestName, paso, solapaAtras, tilt }) => {
                 </div>
             )}
 
-            <div className="relative px-6 text-center text-porcelain">
+            <motion.div
+                animate={paso >= 3 ? { scale: 7, opacity: 0 } : { scale: 1, opacity: 1 }}
+                transition={{ scale: entrada, opacity: { duration: 0.5, delay: 0.4 } }}
+                style={{ transformOrigin: '50% 40%' }}
+                className="relative px-6 text-center text-porcelain"
+            >
                 <motion.div
                     animate={{ rotateX: paso ? 0 : tilt.x, rotateY: paso ? 0 : tilt.y }}
                     transition={{ type: 'spring', stiffness: 120, damping: 14 }}
@@ -70,34 +75,20 @@ const Envelope = ({ guestName, paso, solapaAtras, tilt }) => {
                         transition={{ duration: 1.1, times: [0, 0.55, 0.75, 1], ease: 'easeOut' }}
                         className="relative aspect-[11/8]"
                     >
-                        <motion.div aria-hidden="true" animate={cae} transition={salida} className="absolute inset-0 rounded-[7px] bg-[#e6dbc2] shadow-[0_22px_30px_rgba(0,0,0,0.45)]" />
+                        <div aria-hidden="true" className="absolute inset-0 rounded-[7px] bg-[#e6dbc2] shadow-[0_22px_30px_rgba(0,0,0,0.45)]" />
 
-                        {/* La tarjeta: espera dentro del sobre y sube al abrirlo */}
-                        <motion.div
-                            aria-hidden="true"
-                            animate={paso >= 4 ? { y: '-38%', scale: 1.18 } : paso >= 3 ? { y: '-52%', scale: 1 } : { y: '0%', scale: 1 }}
-                            transition={{ duration: 1, ease: [0.2, 0.8, 0.25, 1] }}
-                            className={`absolute inset-x-[4.5%] top-[4.3%] h-[91%] ${paso >= 4 ? 'z-[8]' : 'z-[2]'} bg-porcelain shadow-[0_6px_18px_rgba(74,69,41,0.25)] text-[#4a4529] flex flex-col items-center justify-center gap-[1.5%]`}
-                        >
-                            <span className="absolute inset-[7px] border border-[#c2b48a]" />
-                            <span className="font-sans font-bold uppercase tracking-[0.32em] text-[#586748] text-[clamp(0.5rem,2.3vw,0.75rem)]">Nos casamos</span>
-                            <span className="font-anastasia leading-[1.05] text-[clamp(2.1rem,10.5vw,3.9rem)]">Geraldine<br />&amp; Gustavo</span>
-                            <span className="font-cormorant font-semibold tracking-[0.14em] text-[clamp(0.95rem,4.6vw,1.6rem)]">20 · 03 · 2027</span>
-                            <span className="font-cormorant italic font-medium text-[clamp(0.8rem,3.7vw,1.3rem)]">Medellín</span>
-                        </motion.div>
-
-                        <motion.svg viewBox="0 0 440 320" aria-hidden="true" animate={cae} transition={salida} className="absolute inset-0 z-[3] w-full h-full overflow-visible">
+                        <svg viewBox="0 0 440 320" aria-hidden="true" className="absolute inset-0 z-[3] w-full h-full overflow-visible">
                             <path d="M0 10 L214 174 L0 320 Z" fill="#efe6d1" />
                             <path d="M440 10 L226 174 L440 320 Z" fill="#efe6d1" />
                             <path d="M0 10 L214 174 L0 320 M440 10 L226 174 L440 320" fill="none" stroke="#d9cfb6" strokeWidth="0.8" />
                             <path d="M0 320 L206 168 Q220 158 234 168 L440 320 Z" fill="#fbf7ec" stroke="#d9cfb6" strokeWidth="0.8" />
-                        </motion.svg>
+                        </svg>
 
                         {guestName && (
                             <motion.p
                                 initial={sinMovimiento ? false : { clipPath: 'inset(0 100% 0 0)' }}
-                                animate={{ clipPath: 'inset(0 0% 0 0)', ...cae }}
-                                transition={{ clipPath: { duration: 1.4, delay: 1.5, ease: 'easeInOut' }, default: salida }}
+                                animate={{ clipPath: 'inset(0 0% 0 0)' }}
+                                transition={{ duration: 1.4, delay: 1.5, ease: 'easeInOut' }}
                                 className="absolute z-[4] inset-x-[8%] bottom-[5%] truncate font-['Pinyon_Script'] text-[clamp(1.35rem,7vw,2.6rem)] leading-tight text-[#4f4a2c]"
                             >
                                 {guestName}
@@ -107,8 +98,8 @@ const Envelope = ({ guestName, paso, solapaAtras, tilt }) => {
                         {/* Solapa superior: gira hacia atrás y, pasada la mitad, queda detrás de la carta */}
                         <motion.div
                             aria-hidden="true"
-                            animate={{ rotateX: paso >= 2 ? 180 : 0, ...(paso >= 4 ? { opacity: 0 } : {}) }}
-                            transition={{ rotateX: { duration: 0.75, ease: [0.5, 0.05, 0.3, 1] }, opacity: { duration: 0.4 } }}
+                            animate={{ rotateX: paso >= 2 ? 180 : 0 }}
+                            transition={{ duration: 0.75, ease: [0.5, 0.05, 0.3, 1] }}
                             style={{ transformOrigin: '50% 0', transformPerspective: 1000 }}
                             className={`absolute inset-0 ${solapaAtras ? 'z-[1]' : 'z-[5]'}`}
                         >
@@ -188,13 +179,14 @@ const Envelope = ({ guestName, paso, solapaAtras, tilt }) => {
                 >
                     Toca el sello para abrir tu invitación
                 </motion.p>
-            </div>
+            </motion.div>
         </>
     );
 };
 
 // `envelope`: muestra el sobre (invitación); sin él, solo el sello sobre fondo oscuro (save the date).
-const WelcomeModal = ({ isOpen, onClose, onStartMusic, envelope = false, guestName = '' }) => {
+// onRevelar: al entrar al sobre la página de abajo ya debe verse (el sobre se desvanece sobre ella).
+const WelcomeModal = ({ isOpen, onClose, onStartMusic, onRevelar, envelope = false, guestName = '' }) => {
     const sinMovimiento = useReducedMotion();
     const [paso, setPaso] = useState(0);
     const [solapaAtras, setSolapaAtras] = useState(false);
@@ -217,6 +209,7 @@ const WelcomeModal = ({ isOpen, onClose, onStartMusic, envelope = false, guestNa
         if (sinMovimiento) return onClose();
         const luego = (ms, fn) => timers.current.push(setTimeout(fn, ms));
         PASOS.forEach(([ms, n]) => luego(ms, () => setPaso(n)));
+        luego(PASOS[2][0], () => onRevelar?.());
         luego(SOLAPA_ATRAS_MS, () => setSolapaAtras(true));
         luego(CIERRE_MS, onClose);
     };
@@ -240,7 +233,7 @@ const WelcomeModal = ({ isOpen, onClose, onStartMusic, envelope = false, guestNa
                     onClick={envelope ? openEnvelope : handleEnter}
                     onPointerMove={envelope ? inclinar : undefined}
                     onPointerLeave={() => setTilt({ x: 0, y: 0 })}
-                    className={`fixed inset-0 z-50 flex items-center justify-center cursor-pointer ${envelope ? 'bg-[#2b331f]' : 'bg-black/95 backdrop-blur-md'}`}
+                    className={`fixed inset-0 z-50 flex items-center justify-center cursor-pointer ${envelope ? `transition-colors duration-700 delay-300 ${paso >= 3 ? 'bg-transparent' : 'bg-[#2b331f]'}` : 'bg-black/95 backdrop-blur-md'}`}
                 >
                     {envelope ? <Envelope guestName={guestName} paso={paso} solapaAtras={solapaAtras} tilt={tilt} /> : (
                     <motion.div

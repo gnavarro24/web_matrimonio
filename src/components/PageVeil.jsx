@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import logo from '../assets/decor/logo.png';
 
 // Telón entre páginas: cada página es una carga completa, así que al tocar un enlace interno el telón
 // sube y cubre, se navega, y la página nueva arranca cubierta (marca en sessionStorage) y lo levanta.
@@ -60,7 +61,7 @@ export default function PageVeil() {
 
     return (
         <div aria-hidden="true" className={`velo velo-${fase}`}>
-            <span className="velo-mono font-anastasia text-6xl md:text-7xl leading-none">G &amp; G</span>
+            <img src={logo} alt="" className="velo-mono h-24 md:h-28 brightness-0 invert" />
             <span className="velo-linea w-20 h-px bg-dry-sage" />
             <span className="velo-mono font-sans text-[10px] font-bold uppercase tracking-[0.32em] text-[#e4e7d4]">{destino}</span>
         </div>

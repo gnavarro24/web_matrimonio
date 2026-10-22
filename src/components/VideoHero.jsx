@@ -1,25 +1,17 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Pause, Volume2, VolumeX } from 'lucide-react';
+import poster from '../assets/decor/video_poster.webp';
 
-const START = 11; // segundos: se salta el intro del save the date
-const videoNavelas = `https://pub-e8a7374af923467a80b60dbbb3742ea9.r2.dev/theNavelas.mp4#t=${START}`;
-
-const ControlButton = ({ onClick, label, children }) => (
-    <button
-        type="button"
-        onClick={onClick}
-        aria-label={label}
-        className="w-11 h-11 flex items-center justify-center rounded-full bg-black/40 text-porcelain backdrop-blur-sm border border-white/30 hover:bg-black/60 transition-colors"
-    >
-        {children}
-    </button>
-);
+// Videos en public/video, ya recortados desde el segundo 11 del original (se salta el intro del save the date) y sin audio:
+// portada-movil.mp4 = recorte vertical 9:16 del centro (lo que se ve en un celular en vertical, 608×1080, 11,6 MB);
+// portada.mp4 = 1080p completo para pantallas horizontales (22,6 MB). Antes era un único archivo de 95 MB en R2.
+// El póster es el primer cuadro: se ve al instante mientras carga. Si cambia el video, regenerar video_poster.webp.
+// Se elige al cargar con matchMedia: `media` en <source> no lo respetan todos los navegadores (WebKit lo ignora).
+// ponytail: si giran el teléfono no cambia de versión; object-cover recorta igual.
+const videoPortada = window.matchMedia('(orientation: portrait)').matches ? '/video/portada-movil.mp4' : '/video/portada.mp4';
 
 const VideoHero = ({ videoShouldPlay = false }) => {
     const videoRef = useRef(null);
-    const [playing, setPlaying] = useState(false);
-    const [muted, setMuted] = useState(true);
 
     useEffect(() => {
         const video = videoRef.current;
@@ -28,53 +20,21 @@ const VideoHero = ({ videoShouldPlay = false }) => {
         else video.pause();
     }, [videoShouldPlay]);
 
-    // Con sonido del video, la música de fondo se pausa (eventos que escucha SimpleAudioTest)
-    const audible = playing && !muted;
-    useEffect(() => {
-        window.dispatchEvent(new CustomEvent(audible ? 'video-playing' : 'video-stopped'));
-    }, [audible]);
-
-    // Loop manual desde START: el atributo loop volvería al segundo 0
-    const handleTimeUpdate = (e) => {
-        const v = e.currentTarget;
-        if (v.duration && v.currentTime >= v.duration - 0.5) v.currentTime = START;
-    };
-
-    const handleLoadedMetadata = (e) => {
-        if (e.currentTarget.currentTime < START) e.currentTarget.currentTime = START;
-    };
-
-    const togglePlay = () => {
-        const v = videoRef.current;
-        if (v.paused) v.play().catch(() => {});
-        else v.pause();
-    };
-
-    const toggleMute = () => {
-        const v = videoRef.current;
-        v.muted = !v.muted;
-        setMuted(v.muted);
-        if (!v.muted && v.paused) v.play().catch(() => {});
-    };
-
     return (
-        <header id="home" className="relative h-[100svh] min-h-[520px] flex items-center justify-center overflow-hidden bg-black">
-            {/* ponytail: sin controls nativos para que no haya botón de fullscreen (iOS ignora controlsList) */}
+        <header id="home" className="relative h-[100svh] min-h-[520px] flex items-center justify-center overflow-hidden bg-black bg-cover bg-center" style={{ backgroundImage: `url(${poster})` }}>
+            {/* Fondo mudo y sin controles. ponytail: sin controls nativos para que no haya botón de fullscreen (iOS ignora controlsList) */}
             <video
                 ref={videoRef}
-                src={videoNavelas}
+                poster={poster}
                 muted
+                loop
                 playsInline
                 webkit-playsinline="true"
                 disablePictureInPicture
-                preload="metadata"
+                preload="auto"
                 onContextMenu={(e) => e.preventDefault()}
-                onLoadedMetadata={handleLoadedMetadata}
-                onTimeUpdate={handleTimeUpdate}
-                onEnded={(e) => { e.currentTarget.currentTime = START; e.currentTarget.play().catch(() => {}); }}
-                onPlay={() => setPlaying(true)}
-                onPause={() => setPlaying(false)}
                 className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                src={videoPortada}
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60 pointer-events-none" />
 
@@ -98,18 +58,6 @@ const VideoHero = ({ videoShouldPlay = false }) => {
                     <p className="text-5xl sm:text-6xl md:text-7xl mt-2 sm:mt-4 font-cormorant">20.03.27</p>
                     <p className="text-xl sm:text-2xl md:text-3xl mt-1 font-cormorant">Medellín, Colombia</p>
                 </motion.div>
-            </div>
-
-            <div
-                className="absolute z-20 left-4 flex gap-3"
-                style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom))' }}
-            >
-                <ControlButton onClick={togglePlay} label={playing ? 'Pausar video' : 'Reproducir video'}>
-                    {playing ? <Pause size={20} /> : <Play size={20} className="ml-0.5" />}
-                </ControlButton>
-                <ControlButton onClick={toggleMute} label={muted ? 'Activar sonido' : 'Silenciar video'}>
-                    {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-                </ControlButton>
             </div>
         </header>
     );

@@ -33,7 +33,7 @@ function App() {
     };
 
     return (
-        <div className="min-h-screen bg-porcelain relative overflow-x-hidden">
+        <div className="min-h-screen bg-porcelain relative overflow-clip">
             <div style={{ visibility: showModal ? 'hidden' : 'visible' }}>
             <Navbar />
             <Hero videoShouldPlay={!showModal} />

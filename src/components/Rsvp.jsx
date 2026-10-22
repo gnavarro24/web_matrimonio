@@ -2,7 +2,7 @@ import { useState } from 'react';
 import SectionWrapper from './SectionWrapper';
 import { motion } from 'framer-motion';
 import { Check, Loader2 } from 'lucide-react';
-import cuadroMonet from '../assets/decor/cuadro_monet.jpeg';
+import cuadroMonet from '../assets/decor/cuadro_monet.webp';
 
 const Rsvp = () => {
     const [formData, setFormData] = useState({
@@ -123,7 +123,7 @@ const Rsvp = () => {
         <SectionWrapper id="rsvp" className="bg-cream border-2 border-dusty-olive p-10 relative overflow-visible">
             {/* Floating bust - left side */}
             {/*<div className="absolute left-2 w-16 h-16 md:left-4 md:w-24 md:h-24 pointer-events-none z-10" style={{top: '-30px'}}>
-                <img
+                <img loading="lazy" decoding="async"
                     src={bustoItaliano}
                     alt="Busto italiano"
                     className="w-full h-full object-contain rotate-12 drop-shadow-lg"
@@ -133,7 +133,7 @@ const Rsvp = () => {
             {/* Floating decorative element */}
             <div className="absolute right-2 w-24 sm:w-28 md:right-12 md:top-1/2 md:-translate-y-1/2 md:w-44 pointer-events-none z-10" style={{top: '-70px', rotate: '-15deg'}}>
                 <div className="relative">
-                    <img
+                    <img loading="lazy" decoding="async"
                         src={cuadroMonet}
                         alt="Cuadro Monet"
                         className="w-full rounded-lg shadow-lg"

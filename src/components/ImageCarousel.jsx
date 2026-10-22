@@ -112,7 +112,7 @@ const ImageCarousel = ({
         >
             <div className="relative w-full" style={{ aspectRatio: '4 / 3' }}>
                 <AnimatePresence mode="popLayout" initial={false}>
-                    <motion.img
+                    <motion.img loading="lazy" decoding="async"
                         key={currentIndex}
                         src={images[currentIndex].src}
                         alt={images[currentIndex].alt || `Imagen ${currentIndex + 1}`}
