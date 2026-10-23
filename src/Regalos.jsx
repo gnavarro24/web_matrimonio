@@ -3,17 +3,20 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { Heart, Check, Copy } from 'lucide-react';
 import Navbar from './components/Navbar';
 import SectionWrapper from './components/SectionWrapper';
-import { ColosseumIcon, SailboatIcon, GelatoIcon, PastaWineIcon, VespaIcon, SofaIcon, BankIcon, GlobeIcon } from './components/GiftIcons';
+import { PastaWineIcon, PlaneIcon, BedIcon, TrainIcon, HouseIcon, MapIcon, CarIcon, ChampagneIcon, SpaIcon, BankIcon, GlobeIcon } from './components/GiftIcons';
 import { gifts, bankAccounts } from './gifts';
 
 const API = '/api/regalos';
 const icons = {
-    'luna-de-miel': ColosseumIcon,
-    'paseo-en-bote': SailboatIcon,
-    'gelato': GelatoIcon,
+    'tiquetes': PlaneIcon,
+    'hotel': BedIcon,
+    'tren': TrainIcon,
+    'luna-de-miel': MapIcon,
     'pasta-y-vino': PastaWineIcon,
-    'vespa': VespaIcon,
-    'nuestro-hogar': SofaIcon,
+    'carro': CarIcon,
+    'brindis': ChampagneIcon,
+    'spa': SpaIcon,
+    'nuestro-hogar': HouseIcon,
 };
 const bankIcons = { colombia: BankIcon, usa: GlobeIcon };
 // Mancha de fondo de cada icono: una forma distinta por tarjeta.
@@ -30,7 +33,7 @@ const btn = "inline-block px-8 py-4 border border-dusty-olive tracking-widest up
 const ink = "text-[#4a4529]";
 const kicker = "font-sans font-bold uppercase text-[#586748]";
 
-// Ruta punteada Medellín → Italia con un avioncito de papel que flota.
+// Ruta punteada Medellín → luna de miel con un avioncito de papel que flota.
 const Route = () => {
     const quieto = useReducedMotion();
     return (
@@ -44,7 +47,7 @@ const Route = () => {
             </motion.g>
             <g className="font-sans" fontSize="11" fontWeight="700" letterSpacing="2.4" fill="#586748" stroke="none" textAnchor="middle">
                 <text x="40" y="118">MEDELLÍN</text>
-                <text x="480" y="118">ITALIA</text>
+                <text x="470" y="118">HONEYMOON</text>
             </g>
         </svg>
     );
@@ -117,7 +120,7 @@ function Regalos() {
                     <span className="font-anastasia">fund</span>
                 </h1>
                 <p className="max-w-2xl mx-auto mt-6 text-xl md:text-2xl font-cormorant italic font-medium">
-                    Elige tu plan favorito y ayúdanos a llegar a la meta de nuestra luna de miel o de nuestro primer hogar.
+                    Elige tu plan favorito y ayúdanos a llegar a la meta de nuestro honeymoon o de nuestro primer hogar.
                 </p>
                 <p className="mt-7 inline-block -rotate-3 border-2 border-dusty-olive p-[5px] text-[#586748]" aria-live="polite">
                     <span className="flex items-baseline gap-2.5 border border-dusty-olive px-5 py-2.5">
@@ -168,7 +171,7 @@ function Regalos() {
                                     </p>
 
                                     {given[id] ? (
-                                        <p className="min-h-[52px] flex items-center justify-center bg-dusty-olive text-porcelain font-anastasia text-3xl leading-none">¡Grazie mille!</p>
+                                        <p className="min-h-[52px] flex items-center justify-center bg-dusty-olive text-porcelain font-anastasia text-3xl leading-none">¡Mil gracias!</p>
                                     ) : (
                                         <button
                                             type="button"

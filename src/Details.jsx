@@ -66,7 +66,7 @@ const dressCode = {
     intro: 'Será una noche de gala: queremos verte con tu mejor look, y listo para bailar hasta el final.',
     looks: [
         { title: 'Donna', text: 'Vestido largo de gala' },
-        { title: 'Uomo', text: 'Smoking todo negro', note: 'Sin corbatín de colores.' },
+        { title: 'Uomo', text: 'Smoking todo negro', note: 'Sin corbatín de colores' },
     ],
     // Colores que los invitados deben evitar
     reserved: [

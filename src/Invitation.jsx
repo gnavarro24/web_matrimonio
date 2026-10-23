@@ -19,26 +19,33 @@ const navLinks = [
     { title: "RSVP", href: "#rsvp" },
 ];
 
-// Si el sobre ya se abrió en esta pestaña, no se muestra otra vez (atrás, "Regresar", refrescar…).
-// Sin excepción para "reload": Safari en iPhone reporta así el volver atrás cuando recarga la página.
-// Quien entra directo a una subpágina y luego pasa a la invitación tampoco lo ve (eso sí usa el referrer).
+// Quien vuelve desde una subpágina (atrás, "Regresar", menú) no ve el sobre otra vez; al refrescar sí sale.
+// La marca la deja main.jsx al abrir una subpágina y se gasta aquí. No sirve el tipo de navegación:
+// Safari en iPhone reporta "reload" al volver atrás cuando recarga la página.
+const MARCA = 'en-subpagina';
 const vieneDeAdentro = () => {
-    const nav = performance.getEntriesByType('navigation')[0];
     try {
-        if (sessionStorage.getItem('sobre-abierto')) return true;
-    } catch { /* sin sessionStorage: se decide por el referrer */ }
-    if (nav?.type !== 'navigate' || !document.referrer) return false;
-    const ref = new URL(document.referrer);
-    return ref.origin === window.location.origin && ref.pathname.startsWith('/invitacion/');
+        const si = !!sessionStorage.getItem(MARCA);
+        sessionStorage.removeItem(MARCA);
+        return si;
+    } catch { return false; }
 };
+const llegaDeSubpagina = vieneDeAdentro(); // una vez por carga (StrictMode llamaría dos veces un inicializador de useState)
 
 function Invitation() {
-    const [saltarSobre] = useState(vieneDeAdentro);
+    const saltarSobre = llegaDeSubpagina;
     const [showModal, setShowModal] = useState(!saltarSobre);
     const [revelado, setRevelado] = useState(saltarSobre); // la página se ve mientras el sobre se desvanece encima
     // Sin sobre no hay toque que arranque la música: se monta igual (respeta la pausa guardada).
     const [audioEnabled, setAudioEnabled] = useState(saltarSobre);
     const invitado = useInvitado();
+
+    // Vuelta atrás restaurada de la caché del navegador (sin recargar): gastar la marca para que refrescar muestre el sobre
+    useEffect(() => {
+        const alVolver = (e) => { if (e.persisted) try { sessionStorage.removeItem(MARCA); } catch { /* nada */ } };
+        window.addEventListener('pageshow', alVolver);
+        return () => window.removeEventListener('pageshow', alVolver);
+    }, []);
 
     // Bloquear scroll mientras el modal está abierto
     useEffect(() => {
@@ -56,7 +63,6 @@ function Invitation() {
 
     const handleCloseModal = () => {
         setShowModal(false);
-        try { sessionStorage.setItem('sobre-abierto', '1'); } catch { /* el sobre volverá a salir */ }
         // Llegando desde /invitacion/details con #rsvp: saltar a la sección tras abrir
         if (window.location.hash) {
             setTimeout(() => document.querySelector(window.location.hash)?.scrollIntoView(), 100);

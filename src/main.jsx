@@ -12,7 +12,10 @@ const routes = {
     '/invitacion/regalos': () => import('./Regalos.jsx'),
     '/invitacion/historia': () => import('./Historia.jsx'),
 };
-const Page = lazy(routes[window.location.pathname.replace(/\/+$/, '')] || (() => import('./App.jsx')));
+const ruta = window.location.pathname.replace(/\/+$/, '');
+// Marca para la invitación: quien vuelve desde una subpágina no ve el sobre otra vez (ver Invitation.jsx).
+if (ruta.startsWith('/invitacion/')) try { sessionStorage.setItem('en-subpagina', '1'); } catch { /* el sobre volverá a salir */ }
+const Page = lazy(routes[ruta] || (() => import('./App.jsx')));
 
 ReactDOM.createRoot(document.getElementById('root')).render(
     <React.StrictMode>

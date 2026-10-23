@@ -37,7 +37,7 @@ const questions = [
     },
     {
         question: "¿Qué les podemos regalar?",
-        answer: <>Tu presencia es nuestro mejor regalo. Si además quieres tener un detalle con nosotros, en la <a href="/invitacion/regalos" className={enlace}>página de Regalos</a> puedes ayudarnos a llegar a la meta de nuestra luna de miel o de nuestro primer hogar.</>,
+        answer: <>Tu presencia es nuestro mejor regalo. Si además quieres tener un detalle con nosotros, en la <a href="/invitacion/regalos" className={enlace}>página de Regalos</a> puedes ayudarnos a llegar a la meta de nuestro honeymoon o de nuestro primer hogar.</>,
     },
 ];
 

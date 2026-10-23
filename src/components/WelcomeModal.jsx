@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import waxSealImage from '../assets/decor/sello_cera.webp';
 import toscanaImage from '../assets/decor/toscana.webp';
+import logo from '../assets/decor/logo.png';
 
 // Pantalla de entrada de la invitación: sobre cerrado con el sello en la punta de la solapa,
 // sobre una foto de la Toscana desenfocada y oscurecida (scale-105 tapa el borde que deja el blur).
@@ -12,11 +13,18 @@ import toscanaImage from '../assets/decor/toscana.webp';
 // con el mouse, el sobre se inclina en 3D. Al tocar (el sello o cualquier parte), el sello se parte,
 // estallan hojitas y la solapa se abre. Entrada (2026-10-17, sin tarjeta): la cámara "entra" al sobre,
 // que crece y se desvanece mientras el fondo se aclara y deja ver la portada. `paso` lleva la secuencia.
-const PASOS = [ // [ms desde el toque, paso]: 1 sello roto · 2 solapa abierta · 3 entrada al sobre
-    [0, 1], [380, 2], [1000, 3],
+// Tarjeta (2026-10-23): antes de entrar, la tarjeta con los padres sale del sobre, el sobre se va hacia abajo
+// y la tarjeta queda quieta y derecha unos segundos para leerla; un toque la salta.
+const LECTURA_MS = 3500;
+const PASOS = [ // [ms desde el toque, paso]: 1 sello roto · 2 solapa abierta · 3 tarjeta sube · 4 sobre se va, tarjeta al frente · 5 entrada
+    [0, 1], [380, 2], [800, 3], [1550, 4], [1550 + LECTURA_MS, 5],
 ];
 const SOLAPA_ATRAS_MS = 760; // a mitad del giro la solapa pasa detrás del sobre
-const CIERRE_MS = 2200;
+const SALIDA_MS = 1000; // de la entrada (paso 5) al cierre
+// Paso 4: cada pieza del sobre baja y se desvanece por separado (envolverlas rompería el orden de capas con la tarjeta).
+const SE_VA = { y: '160%', opacity: 0 };
+const QUEDA = { y: '0%', opacity: 1 };
+const irse = { duration: 0.75, ease: [0.5, 0, 0.75, 0] };
 const entrada = { duration: 1, ease: [0.55, 0, 0.9, 0.45] }; // acelera, como lanzarse hacia adentro
 
 const SELLO = { left: '50%', top: '55.6%' }; // punta de la solapa
@@ -34,9 +42,53 @@ const polvo = Array.from({ length: 14 }, (_, i) => ({
     x: `${(i * 37 + 11) % 100}%`, y: `${40 + ((i * 53) % 60)}%`, s: 2 + (i % 3), dur: 7 + (i % 5) * 1.6, delay: i * 1.3,
 }));
 
+// Tarjeta "A · Clásica de doble filete" del lienzo de diseño. Medidas en cqw (ancho de la tarjeta) para que
+// escale igual en celular y escritorio. Empieza metida en el bolsillo del sobre (el recorte la esconde por
+// debajo); sube hasta salir del todo y, ya afuera, pasa al frente y baja a cubrir el sobre.
+// Altura de la tarjeta ≈ 1,74 × alto del sobre: subir 120 % la deja justo encima; -41 % la centra sobre él.
+// Al frente crece lo que quepa en pantalla (en el celular el sobre es angosto y la letra quedaría chica).
+const escalaLectura = (el) => el ? Math.min(1.35, (0.86 * window.innerWidth) / el.offsetWidth, (0.84 * window.innerHeight) / el.offsetHeight) : 1;
+
+const Tarjeta = ({ paso }) => {
+    const ref = useRef(null);
+    return (
+    <div
+        aria-hidden={paso < 4}
+        className={`absolute inset-0 pointer-events-none ${paso >= 4 ? 'z-[8]' : 'z-[2] [clip-path:inset(-300%_0_0_0)]'}`}
+    >
+        <motion.div
+            ref={ref}
+            initial={false}
+            animate={paso >= 4 ? { y: '-41%', rotate: 3, scale: escalaLectura(ref.current) } : paso === 3 ? { y: '-120%', rotate: 0, scale: 1 } : { y: '0%', rotate: 0, scale: 1 }}
+            transition={paso >= 4 ? { duration: 0.8, ease: [0.3, 0.7, 0.3, 1] } : { duration: 0.75, ease: [0.45, 0, 0.3, 1] }}
+            style={{ containerType: 'inline-size' }}
+            className="absolute left-[9%] top-[35%] w-[82%] aspect-[440/680] bg-porcelain p-[3.2cqw] shadow-[0_24px_48px_rgba(0,0,0,0.45)] font-cormorant text-[#4a4529] text-center"
+        >
+            <div className="h-full border border-dark-olive p-[1.1cqw]">
+                <div className="h-full border border-dark-olive px-[6.8cqw] py-[7.7cqw] flex flex-col items-center justify-between">
+                    <img src={logo} alt="" className="w-[12.3cqw] opacity-85" />
+                    <p className="text-[3.6cqw] italic font-medium leading-[1.4]">Con la bendición de Dios<br />y de nuestros padres</p>
+                    <div className="w-full grid grid-cols-2 gap-[3.6cqw] text-[4.1cqw] font-semibold tracking-[0.04em] leading-[1.45]">
+                        <p>Rogers Navarro<br />Omaira de la Ossa</p>
+                        <p>Ricardo Vela<br />Lilia Torrenegra</p>
+                    </div>
+                    <p className="text-[3.6cqw] italic font-medium leading-[1.4]">tienen el honor de invitarle<br />al matrimonio de sus hijos</p>
+                    <p className="font-anastasia text-[12.3cqw] leading-[1.05] text-[#413c22]">Gustavo<br /><span className="text-[7.3cqw]">&amp;</span> Geraldine</p>
+                    <div aria-hidden="true" className="flex items-center gap-[2.3cqw] text-dusty-olive">
+                        <span className="w-[11cqw] border-t border-current" />
+                        <span className="w-[1.4cqw] h-[1.4cqw] rotate-45 bg-current" />
+                        <span className="w-[11cqw] border-t border-current" />
+                    </div>
+                </div>
+            </div>
+        </motion.div>
+    </div>
+    );
+};
+
 const Envelope = ({ guestName, paso, solapaAtras, tilt }) => {
     const sinMovimiento = useReducedMotion();
-    const fondo = `transition-opacity duration-700 delay-300 ${paso >= 3 ? 'opacity-0' : ''}`; // el sobre arranca primero
+    const fondo = `transition-opacity duration-700 delay-300 ${paso >= 5 ? 'opacity-0' : ''}`; // el sobre arranca primero
     return (
         <>
             <img fetchpriority="high" src={toscanaImage} alt="" className={`absolute inset-0 w-full h-full object-cover [object-position:38%_50%] md:[object-position:50%_60%] blur-[5px] scale-105 ${fondo}`} />
@@ -58,8 +110,8 @@ const Envelope = ({ guestName, paso, solapaAtras, tilt }) => {
             )}
 
             <motion.div
-                animate={paso >= 3 ? { scale: 7, opacity: 0 } : { scale: 1, opacity: 1 }}
-                transition={{ scale: entrada, opacity: { duration: 0.5, delay: 0.4 } }}
+                animate={paso >= 5 ? { scale: 4, opacity: 0 } : { scale: 1, opacity: 1 }}
+                transition={{ scale: entrada, opacity: { duration: 0.5, delay: 0.3 } }}
                 style={{ transformOrigin: '50% 40%' }}
                 className="relative px-6 text-center text-porcelain"
             >
@@ -75,20 +127,22 @@ const Envelope = ({ guestName, paso, solapaAtras, tilt }) => {
                         transition={{ duration: 1.1, times: [0, 0.55, 0.75, 1], ease: 'easeOut' }}
                         className="relative aspect-[11/8]"
                     >
-                        <div aria-hidden="true" className="absolute inset-0 rounded-[7px] bg-[#e6dbc2] shadow-[0_22px_30px_rgba(0,0,0,0.45)]" />
+                        <motion.div aria-hidden="true" initial={false} animate={paso >= 4 ? SE_VA : QUEDA} transition={irse} className="absolute inset-0 rounded-[7px] bg-[#e6dbc2] shadow-[0_22px_30px_rgba(0,0,0,0.45)]" />
 
-                        <svg viewBox="0 0 440 320" aria-hidden="true" className="absolute inset-0 z-[3] w-full h-full overflow-visible">
+                        <Tarjeta paso={paso} />
+
+                        <motion.svg viewBox="0 0 440 320" aria-hidden="true" initial={false} animate={paso >= 4 ? SE_VA : QUEDA} transition={irse} className="absolute inset-0 z-[3] w-full h-full overflow-visible">
                             <path d="M0 10 L214 174 L0 320 Z" fill="#efe6d1" />
                             <path d="M440 10 L226 174 L440 320 Z" fill="#efe6d1" />
                             <path d="M0 10 L214 174 L0 320 M440 10 L226 174 L440 320" fill="none" stroke="#d9cfb6" strokeWidth="0.8" />
                             <path d="M0 320 L206 168 Q220 158 234 168 L440 320 Z" fill="#fbf7ec" stroke="#d9cfb6" strokeWidth="0.8" />
-                        </svg>
+                        </motion.svg>
 
                         {guestName && (
                             <motion.p
                                 initial={sinMovimiento ? false : { clipPath: 'inset(0 100% 0 0)' }}
-                                animate={{ clipPath: 'inset(0 0% 0 0)' }}
-                                transition={{ duration: 1.4, delay: 1.5, ease: 'easeInOut' }}
+                                animate={{ clipPath: 'inset(0 0% 0 0)', ...(paso >= 4 ? SE_VA : QUEDA) }}
+                                transition={{ duration: 1.4, delay: 1.5, ease: 'easeInOut', y: irse, opacity: irse }}
                                 className="absolute z-[4] inset-x-[8%] bottom-[5%] truncate font-['Pinyon_Script'] text-[clamp(1.35rem,7vw,2.6rem)] leading-tight text-[#4f4a2c]"
                             >
                                 {guestName}
@@ -98,8 +152,8 @@ const Envelope = ({ guestName, paso, solapaAtras, tilt }) => {
                         {/* Solapa superior: gira hacia atrás y, pasada la mitad, queda detrás de la carta */}
                         <motion.div
                             aria-hidden="true"
-                            animate={{ rotateX: paso >= 2 ? 180 : 0 }}
-                            transition={{ duration: 0.75, ease: [0.5, 0.05, 0.3, 1] }}
+                            animate={{ rotateX: paso >= 2 ? 180 : 0, ...(paso >= 4 ? SE_VA : QUEDA) }}
+                            transition={{ duration: 0.75, ease: [0.5, 0.05, 0.3, 1], y: irse, opacity: irse }}
                             style={{ transformOrigin: '50% 0', transformPerspective: 1000 }}
                             className={`absolute inset-0 ${solapaAtras ? 'z-[1]' : 'z-[5]'}`}
                         >
@@ -192,6 +246,7 @@ const WelcomeModal = ({ isOpen, onClose, onStartMusic, onRevelar, envelope = fal
     const [solapaAtras, setSolapaAtras] = useState(false);
     const [tilt, setTilt] = useState({ x: 0, y: 0 });
     const timers = useRef([]);
+    const salio = useRef(false);
     useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
     const handleEnter = () => {
@@ -203,15 +258,23 @@ const WelcomeModal = ({ isOpen, onClose, onStartMusic, onRevelar, envelope = fal
 
     // La música arranca con el toque (los navegadores lo exigen); la invitación aparece al terminar la animación.
     const openEnvelope = () => {
+        if (paso === 4) return entrar(); // ya la leyó: un toque salta la espera
         if (paso) return;
         localStorage.setItem('wedding-audio-enabled', 'true');
         onStartMusic();
         if (sinMovimiento) return onClose();
         const luego = (ms, fn) => timers.current.push(setTimeout(fn, ms));
-        PASOS.forEach(([ms, n]) => luego(ms, () => setPaso(n)));
-        luego(PASOS[2][0], () => onRevelar?.());
+        PASOS.slice(0, -1).forEach(([ms, n]) => luego(ms, () => setPaso(n)));
         luego(SOLAPA_ATRAS_MS, () => setSolapaAtras(true));
-        luego(CIERRE_MS, onClose);
+        luego(PASOS[4][0], entrar);
+    };
+
+    const entrar = () => {
+        if (salio.current) return;
+        salio.current = true;
+        setPaso(5);
+        onRevelar?.();
+        timers.current.push(setTimeout(onClose, SALIDA_MS));
     };
 
     // Solo con mouse: en el celular el dedo no "pasa por encima" y el sobre saltaría.
@@ -233,7 +296,7 @@ const WelcomeModal = ({ isOpen, onClose, onStartMusic, onRevelar, envelope = fal
                     onClick={envelope ? openEnvelope : handleEnter}
                     onPointerMove={envelope ? inclinar : undefined}
                     onPointerLeave={() => setTilt({ x: 0, y: 0 })}
-                    className={`fixed inset-0 z-50 flex items-center justify-center cursor-pointer ${envelope ? `transition-colors duration-700 delay-300 ${paso >= 3 ? 'bg-transparent' : 'bg-[#2b331f]'}` : 'bg-black/95 backdrop-blur-md'}`}
+                    className={`fixed inset-0 z-50 flex items-center justify-center cursor-pointer ${envelope ? `transition-colors duration-700 delay-300 ${paso >= 5 ? 'bg-transparent' : 'bg-[#2b331f]'}` : 'bg-black/95 backdrop-blur-md'}`}
                 >
                     {envelope ? <Envelope guestName={guestName} paso={paso} solapaAtras={solapaAtras} tilt={tilt} /> : (
                     <motion.div

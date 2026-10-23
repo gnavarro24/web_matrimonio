@@ -53,7 +53,7 @@ const Gifts = () => (
             <p className="mt-8 text-lg sm:text-xl md:text-2xl font-cormorant text-black/70">
                 Tu presencia es nuestro mejor regalo. Si además quieres tener un detalle con nosotros,{' '}
                 <a href="/invitacion/regalos" className="underline underline-offset-4 decoration-dusty-olive/60 transition-colors hover:text-black">da clic aquí</a>{' '}
-                y ayúdanos a llegar a la meta de nuestra luna de miel o de nuestro primer hogar.
+                y ayúdanos a llegar a la meta de nuestro honeymoon o de nuestro primer hogar.
             </p>
         </div>
     </SectionWrapper>
