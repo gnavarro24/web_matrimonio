@@ -21,15 +21,15 @@ const useTypewriterOnView = (text, speed = 100, delay = 300) => {
     useEffect(() => {
         if (!hasStarted) return;
         let i = 0;
+        let interval;
         const timeout = setTimeout(() => {
-            const interval = setInterval(() => {
+            interval = setInterval(() => {
                 i++;
                 setDisplayed(text.slice(0, i));
                 if (i >= text.length) clearInterval(interval);
             }, speed);
-            return () => clearInterval(interval);
         }, delay);
-        return () => clearTimeout(timeout);
+        return () => { clearTimeout(timeout); clearInterval(interval); };
     }, [hasStarted, text, speed, delay]);
 
     const done = displayed.length === text.length && hasStarted;

@@ -29,7 +29,6 @@ const VideoHero = ({ videoShouldPlay = false }) => {
                 muted
                 loop
                 playsInline
-                webkit-playsinline="true"
                 disablePictureInPicture
                 preload="auto"
                 onContextMenu={(e) => e.preventDefault()}

@@ -8,7 +8,7 @@ import Rsvp from './components/Rsvp';
 import Footer from './components/Footer';
 import WelcomeModal from './components/WelcomeModal';
 import SimpleAudioTest from './components/SimpleAudioTest';
-import gipsyKingsAudio from './assets/decor/gipsy_kings-volare-2min.mp3';
+import standByMeAudio from './assets/decor/stand-by-me.m4a';
 
 function App() {
     const [showModal, setShowModal] = useState(true);
@@ -66,7 +66,7 @@ function App() {
 
             {/* Audio Player TEST - Solo se renderiza después de dar permiso */}
             {audioEnabled && (
-                <SimpleAudioTest src={gipsyKingsAudio} />
+                <SimpleAudioTest src={standByMeAudio} />
             )}
         </div>
     );

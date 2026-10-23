@@ -7,15 +7,15 @@ const useTypewriter = (text, speed = 100, delay = 1500) => {
 
     useEffect(() => {
         let i = 0;
+        let interval;
         const timeout = setTimeout(() => {
-            const interval = setInterval(() => {
+            interval = setInterval(() => {
                 i++;
                 setDisplayed(text.slice(0, i));
                 if (i >= text.length) clearInterval(interval);
             }, speed);
-            return () => clearInterval(interval);
         }, delay);
-        return () => clearTimeout(timeout);
+        return () => { clearTimeout(timeout); clearInterval(interval); };
     }, [text, speed, delay]);
 
     return { displayed, done: displayed.length === text.length };

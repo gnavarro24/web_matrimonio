@@ -59,26 +59,6 @@ body:has(#contacto) { background-color: #413c22; } /* la invitación termina en 
   background-color: #f7f2e9;
 }
 
-/* Elegant double-line frame */
-.elegant-frame {
-  position: relative;
-  padding: 12px;
-}
-
-.elegant-frame::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border: 1px solid #6b5d36;
-}
-
-.elegant-frame::after {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border: 1px solid #6b5d36;
-}
-
 /* Telón entre páginas (PageVeil) */
 html.velo-llega { background: #413c22; }
 .velo {

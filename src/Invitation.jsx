@@ -10,7 +10,7 @@ import Confirmacion from './components/Confirmacion';
 import WelcomeModal from './components/WelcomeModal';
 import SimpleAudioTest from './components/SimpleAudioTest';
 import { useInvitado } from './useInvitado';
-import gipsyKingsAudio from './assets/decor/gipsy_kings-volare-2min.mp3';
+import standByMeAudio from './assets/decor/stand-by-me.m4a';
 
 const navLinks = [
     { title: "Inicio", href: "#home" },
@@ -88,7 +88,7 @@ function Invitation() {
                 guestName={invitado.guest?.nombre || ''}
             />
 
-            {audioEnabled && <SimpleAudioTest src={gipsyKingsAudio} />}
+            {audioEnabled && <SimpleAudioTest src={standByMeAudio} />}
         </div>
     );
 }

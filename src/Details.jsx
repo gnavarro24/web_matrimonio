@@ -187,13 +187,13 @@ function Details() {
                     className="absolute inset-0 w-full h-full object-cover [object-position:56%_55%]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/30 to-black/50" />
-                <h1 className="relative z-10 pt-24 md:pt-16 px-6 text-center text-[4.25rem] sm:text-7xl md:text-[7rem] leading-[1.1] font-anastasia text-porcelain drop-shadow-lg [-webkit-text-stroke-width:0.5px]">
+                <h1 className="relative z-10 pt-36 md:pt-16 px-6 text-center text-[4.25rem] sm:text-7xl md:text-[7rem] leading-[1.1] font-anastasia text-porcelain drop-shadow-lg [-webkit-text-stroke-width:0.5px]">
                     The Details
                 </h1>
             </header>
 
             <Section tone="beige" title="Fecha y lugar">
-                {/* Marco de doble línea, como .elegant-frame */}
+                {/* Marco de doble línea */}
                 <div className="max-w-[920px] mx-auto border border-[#4a4529]/45 p-[5px] md:p-1.5">
                     <div className="border border-[#4a4529]/45 px-5 py-9 md:px-10 md:py-14 grid md:grid-cols-2 gap-7 md:gap-12 text-center">
                         <div>

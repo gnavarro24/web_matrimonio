@@ -1,1 +1,0 @@
-import{c as o}from"./Navbar-DHBkXK3i.js";const n=o("ArrowLeft",[["path",{d:"m12 19-7-7 7-7",key:"1l729n"}],["path",{d:"M19 12H5",key:"x3x0zl"}]]),i=r=>{const e=document.referrer&&new URL(document.referrer);e&&e.origin===window.location.origin&&e.pathname.replace(/\/+$/,"")==="/invitacion"&&(r.preventDefault(),window.history.back())};export{n as A,i as v};
