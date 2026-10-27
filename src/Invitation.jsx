@@ -71,6 +71,7 @@ function Invitation() {
                 onRevelar={() => setRevelado(true)}
                 envelope
                 guestName={invitado.guest?.nombre || ''}
+                cargando={invitado.status === 'loading'}
             />
 
         </div>

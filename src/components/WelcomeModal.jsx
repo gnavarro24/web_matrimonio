@@ -76,8 +76,11 @@ const Tarjeta = ({ tarjetaRef, paso, y }) => (
     </div>
 );
 
-const Envelope = ({ guestName, paso, solapaAtras, tilt }) => {
+const Envelope = ({ guestName, cargando, paso, solapaAtras, tilt }) => {
     const sinMovimiento = useReducedMotion();
+    // Si el nombre llega después de abrir la página (la hoja tarda), se escribe enseguida, sin la espera inicial.
+    const llegoTarde = useRef(false);
+    if (cargando) llegoTarde.current = true;
     const sobreRef = useRef(null);
     const tarjetaRef = useRef(null);
     // Paso 3: el sobre baja hasta salir de la pantalla; la tarjeta sube dentro de él lo justo para que, en
@@ -145,11 +148,18 @@ const Envelope = ({ guestName, paso, solapaAtras, tilt }) => {
                             <path d="M0 320 L206 168 Q220 158 234 168 L440 320 Z" fill="#fbf7ec" stroke="#d9cfb6" strokeWidth="0.8" />
                         </svg>
 
+                        {/* Mientras la hoja responde, el sobre avisa dónde irá el nombre */}
+                        {!guestName && cargando && (
+                            <p role="status" className="absolute z-[4] inset-x-[8%] bottom-[7%] font-cormorant italic text-[clamp(0.95rem,4.2vw,1.35rem)] text-[#4f4a2c]/70 animate-pulse motion-reduce:animate-none">
+                                Cargando invitación…
+                            </p>
+                        )}
+
                         {guestName && (
                             <motion.p
                                 initial={sinMovimiento ? false : { clipPath: 'inset(0 100% 0 0)' }}
                                 animate={{ clipPath: 'inset(0 0% 0 0)' }}
-                                transition={{ duration: 1.4, delay: 1.5, ease: 'easeInOut' }}
+                                transition={{ duration: 1.4, delay: llegoTarde.current ? 0.1 : 1.5, ease: 'easeInOut' }}
                                 className="absolute z-[4] inset-x-[8%] bottom-[5%] truncate font-['Pinyon_Script'] text-[clamp(1.35rem,7vw,2.6rem)] leading-tight text-[#4f4a2c]"
                             >
                                 {guestName}
@@ -235,7 +245,7 @@ const Envelope = ({ guestName, paso, solapaAtras, tilt }) => {
 
 // `envelope`: muestra el sobre (invitación); sin él, solo el sello sobre fondo oscuro (save the date).
 // onRevelar: al entrar al sobre la página de abajo ya debe verse (el sobre se desvanece sobre ella).
-const WelcomeModal = ({ isOpen, onClose, onStartMusic, onRevelar, envelope = false, guestName = '' }) => {
+const WelcomeModal = ({ isOpen, onClose, onStartMusic, onRevelar, envelope = false, guestName = '', cargando = false }) => {
     const sinMovimiento = useReducedMotion();
     const [paso, setPaso] = useState(0);
     const [solapaAtras, setSolapaAtras] = useState(false);
@@ -293,7 +303,7 @@ const WelcomeModal = ({ isOpen, onClose, onStartMusic, onRevelar, envelope = fal
                     onPointerLeave={() => setTilt({ x: 0, y: 0 })}
                     className={`fixed inset-0 z-50 flex items-center justify-center cursor-pointer ${envelope ? `transition-colors duration-700 delay-300 ${paso >= 4 ? 'bg-transparent' : 'bg-[#2b331f]'}` : 'bg-black/95 backdrop-blur-md'}`}
                 >
-                    {envelope ? <Envelope guestName={guestName} paso={paso} solapaAtras={solapaAtras} tilt={tilt} /> : (
+                    {envelope ? <Envelope guestName={guestName} cargando={cargando} paso={paso} solapaAtras={solapaAtras} tilt={tilt} /> : (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
