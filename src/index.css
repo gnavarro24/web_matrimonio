@@ -60,7 +60,6 @@ body:has(#contacto) { background-color: #413c22; } /* la invitación termina en 
 }
 
 /* Telón entre páginas (PageVeil) */
-html.velo-llega { background: #413c22; }
 .velo {
   position: fixed; inset: 0; z-index: 100;
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
@@ -84,7 +83,12 @@ html.velo-llega { background: #413c22; }
 /* El final con márgenes negativos no recorta los rasgos de la letra script */
 @keyframes revela-titulo { to { clip-path: inset(-30% -10% -40% -10%); } }
 
+/* Historia: fila de fotos que corre sola de derecha a izquierda. La fila va duplicada, así que -50 % empalma sin salto */
+.carrusel { animation: carrusel 56s linear infinite; }
+@keyframes carrusel { to { transform: translateX(-50%); } }
+
 @media (prefers-reduced-motion: reduce) {
+  .carrusel { animation: none; }
   .revela h2 { clip-path: none; }
   .revela.on h2 { animation: none; }
 }

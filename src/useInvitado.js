@@ -3,8 +3,8 @@ import { useState, useEffect, useCallback } from 'react';
 // Apps Script que guarda la lista de invitados y sus respuestas (ver apps-script/Code.gs).
 export const RSVP_API = import.meta.env.VITE_RSVP_API;
 
-// Enlace personal: /invitacion?i=ABC234
-// La URL solo lleva el código; el nombre y los cupos se cargan de la hoja "Invitados".
+// Enlace personal: /?i=ABC234
+// La URL solo lleva el código; el nombre y los cupos se cargan de la lista "Tarjeta Wedding Guest List".
 // El código se recuerda para que siga valiendo al volver desde Detalles o Regalos.
 const readCode = () => {
     const fromUrl = new URLSearchParams(window.location.search).get('i');
@@ -13,7 +13,8 @@ const readCode = () => {
 };
 
 // Regla de la boda: la palabra "Familia" al inicio del nombre nunca se muestra; va abreviada como "Flia."
-const abreviarFamilia = (nombre = '') => nombre.replace(/^\s*familia\b\.?\s*/i, 'Flia. ');
+// La lista de invitados escribe "Flia" sin punto: también se corrige.
+const abreviarFamilia = (nombre = '') => nombre.replace(/^\s*(familia|flia)\b\.?\s*/i, 'Flia. ');
 
 // status: 'no-code' | 'loading' | 'invalid' | 'error' | 'ready'
 // guest: { nombre, cupos, asiste, asistentes } tal como está en la hoja

@@ -1,70 +1,114 @@
 /**
  * Confirmación oficial de asistencia (RSVP) — Google Apps Script.
  *
- * Lee y escribe la pestaña "Invitados" de la hoja de cálculo:
+ * Invitados: pestaña "Tarjeta Wedding Guest List" de "The Navelas Wedding Planning Spreadsheet".
  *
- *   A Código | B Nombre | C Cupos | D Enlace | E Asiste | F Asistentes | G Mensaje | H Respondió | I Alergias
+ *   A Invitado | B Family Name | C Invite sent | D # of guests | E Mensaje | F Código
  *
- * Ustedes llenan Nombre y Cupos; `generarEnlaces` rellena Código y Enlace;
- * las columnas E–I las escribe la web cuando el invitado confirma.
+ * Cada fila con Family Name (B) y # of guests (D) es una invitación: B es el nombre que ve el invitado
+ * y D sus cupos. Las demás filas (acompañantes sin cupos propios) se ignoran.
+ * `generarEnlaces` le pone a cada invitación su código (F) y el mensaje de WhatsApp con su enlace (E).
  *
- * El enlace de cada invitado solo lleva su código:  …/invitacion?i=ABC234
+ * Respuestas: pestaña "Invitacion" de "RSVP Matrimonio Gustavo y Geraldine" (la de "Save The Date" no se toca):
+ *
+ *   A Código | B Nombre | C Cupos | D Asiste | E Asistentes | F Mensaje | G Respondió | H Alergias | I Regalo
+ *
+ * I es el plan del Honeymoon fund que eligió la invitación: uno solo, y una vez elegido no se cambia.
+ *
+ * El enlace de cada invitado solo lleva su código:  https://thenavelas.website/?i=ABC234
  * El nombre y los cupos no viajan en la URL: la web los pide aquí con el código,
  * así que nadie puede verlos ni cambiarlos editando el enlace.
  *
- * Cada invitado tiene UNA fila: confirmar, cambiar de opinión o pulsar varias veces
- * sobrescribe sus columnas E–I; nunca se crean filas nuevas.
+ * Cada invitación tiene UNA fila de respuesta: confirmar, cambiar de opinión o pulsar varias veces
+ * sobrescribe esa fila; solo se crea la primera vez que responde.
  */
 
-// ID de la hoja: lo que va entre /d/ y /edit en su URL.
-const SHEET_ID = 'PEGAR_ID_DE_LA_HOJA';
-// Dirección pública de la invitación, sin "/" al final.
-const SITIO = 'https://PEGAR_DOMINIO/invitacion';
+const LISTA_ID = '1Yao7RQdFQTqJ4frYQv4JcnZCXmo91_mMwBdIRPrLEpA';
+const LISTA_PESTANA = 'Tarjeta Wedding Guest List';
+const RESPUESTAS_ID = '1xslragrwE05pHB0uQDIED6BkvCMQwIayINax4ONv2hM';
+const RESPUESTAS_PESTANA = 'Invitacion';
+// Dirección pública de la invitación (la portada del sitio), sin "/" al final.
+const SITIO = 'https://thenavelas.website';
 
-const PESTANA = 'Invitados';
-const ENCABEZADOS = ['Código', 'Nombre', 'Cupos', 'Enlace', 'Asiste', 'Asistentes', 'Mensaje', 'Respondió', 'Alergias'];
+const COL = { nombre: 2, cupos: 4, mensaje: 5, codigo: 6 }; // columnas de la lista (A = 1)
+const ENCABEZADOS = ['Código', 'Nombre', 'Cupos', 'Asiste', 'Asistentes', 'Mensaje', 'Respondió', 'Alergias', 'Regalo'];
+const COL_REGALO = 9;
+// Planes del Honeymoon fund: mismo `id` que src/gifts.js; en la hoja se escribe el título.
+const REGALOS = {
+  'tiquetes': 'Los tiquetes de avión',
+  'hotel': 'Las noches de hotel',
+  'tren': 'Los viajes en tren',
+  'pasta-y-vino': 'Una cena romántica',
+  'luna-de-miel': 'Las excursiones',
+  'carro': 'El carro para recorrer',
+  'brindis': 'Un brindis al atardecer',
+  'spa': 'Un día de spa',
+  'nuestro-hogar': 'Nuestro primer hogar',
+};
+// Título guardado en la hoja → id del plan ('' si no ha elegido).
+function idRegalo_(titulo) {
+  const t = String(titulo || '').trim();
+  return Object.keys(REGALOS).filter(function (id) { return REGALOS[id] === t || id === t; })[0] || '';
+}
+const MENSAJE = '¡Hola! 🤍💌 La cuenta regresiva ha comenzado🥂✨ Nos llena de alegría compartir contigo este capítulo tan especial de nuestra historia. Haz clic y descubre todos los detalles de nuestro gran día: [LINK LINK] 💍 Con cariño, The Navelas 🤍';
 const MAX_MENSAJE = 500;
 // Sin 0/O, 1/I/L: los códigos se pueden dictar sin confusiones.
 const ALFABETO = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
-function hoja_() {
-  const libro = SpreadsheetApp.openById(SHEET_ID);
-  let hoja = libro.getSheetByName(PESTANA);
-  if (!hoja) {
-    hoja = libro.insertSheet(PESTANA);
-    hoja.getRange(1, 1, 1, ENCABEZADOS.length).setValues([ENCABEZADOS]);
-  }
+function lista_() {
+  return SpreadsheetApp.openById(LISTA_ID).getSheetByName(LISTA_PESTANA);
+}
+
+function respuestas_() {
+  const libro = SpreadsheetApp.openById(RESPUESTAS_ID);
+  const hoja = libro.getSheetByName(RESPUESTAS_PESTANA) || libro.insertSheet(RESPUESTAS_PESTANA);
+  // La pestaña ya existe vacía: los encabezados se ponen la primera vez que se usa.
+  if (hoja.getLastRow() === 0) hoja.getRange(1, 1, 1, ENCABEZADOS.length).setValues([ENCABEZADOS]);
   return hoja;
 }
 
-function filas_(hoja) {
+function filas_(hoja, columnas) {
   const ultima = hoja.getLastRow();
-  return ultima < 2 ? [] : hoja.getRange(2, 1, ultima - 1, ENCABEZADOS.length).getValues();
+  return ultima < 2 ? [] : hoja.getRange(2, 1, ultima - 1, columnas).getValues();
 }
 
 function normalizar_(codigo) {
   return String(codigo || '').trim().toUpperCase();
 }
 
-// Devuelve { fila, datos } del invitado o null. `fila` es el número de fila en la hoja.
-function buscar_(hoja, codigo) {
+// Devuelve { fila, datos } de la fila cuyo código (en `columna`) coincide, o null.
+function buscar_(hoja, columna, columnas, codigo) {
   const buscado = normalizar_(codigo);
   if (!buscado) return null;
-  const filas = filas_(hoja);
+  const filas = filas_(hoja, columnas);
   for (let i = 0; i < filas.length; i++) {
-    if (normalizar_(filas[i][0]) === buscado) return { fila: i + 2, datos: filas[i] };
+    if (normalizar_(filas[i][columna - 1]) === buscado) return { fila: i + 2, datos: filas[i] };
   }
   return null;
 }
 
-function invitado_(datos) {
+// Fila de la lista → { nombre, cupos }, o null si le falta el nombre o los cupos.
+function invitacion_(f) {
+  const nombre = String(f[COL.nombre - 1]).trim();
+  const cupos = parseInt(f[COL.cupos - 1], 10);
+  return nombre && cupos >= 1 ? { nombre: nombre, cupos: cupos } : null;
+}
+
+// Nombre y cupos salen de la lista; la respuesta (si ya respondió), de la pestaña Invitacion.
+function invitado_(codigo) {
+  const enLista = buscar_(lista_(), COL.codigo, COL.codigo, codigo);
+  const inv = enLista && invitacion_(enLista.datos);
+  if (!inv) return null;
+  const respuesta = buscar_(respuestas_(), 1, ENCABEZADOS.length, codigo);
+  const r = respuesta ? respuesta.datos : [];
   return {
     ok: true,
-    nombre: String(datos[1]),
-    cupos: Math.max(1, parseInt(datos[2], 10) || 1),
-    asiste: String(datos[4] || '').toLowerCase(), // '', 'si' o 'no'
-    asistentes: parseInt(datos[5], 10) || 0,
-    alergias: String(datos[8] || ''), // vuelve a la web para no perderla al cambiar la respuesta
+    nombre: inv.nombre,
+    cupos: inv.cupos,
+    asiste: String(r[3] || '').toLowerCase(), // '', 'si' o 'no'
+    asistentes: parseInt(r[4], 10) || 0,
+    alergias: String(r[7] || ''), // vuelve a la web para no perderla al cambiar la respuesta
+    regalo: idRegalo_(r[8]),
   };
 }
 
@@ -80,11 +124,11 @@ function texto_(valor) {
 
 // GET ?codigo=CODIGO → datos del invitado (y su respuesta, si ya confirmó).
 function doGet(e) {
-  const encontrado = buscar_(hoja_(), e.parameter.codigo);
-  return json_(encontrado ? invitado_(encontrado.datos) : { ok: false, error: 'codigo' });
+  return json_(invitado_(e.parameter.codigo) || { ok: false, error: 'codigo' });
 }
 
-// POST { codigo, asiste: 'si' | 'no', asistentes, mensaje, alergias } → guarda la respuesta en la fila del invitado.
+// POST { codigo, asiste: 'si' | 'no', asistentes, mensaje, alergias } → guarda la respuesta en la fila de la invitación.
+// POST { codigo, regalo } → guarda el plan del Honeymoon fund elegido (solo el primero cuenta).
 function doPost(e) {
   let entrada;
   try {
@@ -96,49 +140,68 @@ function doPost(e) {
   const candado = LockService.getScriptLock();
   candado.waitLock(20000);
   try {
-    const hoja = hoja_();
-    const encontrado = buscar_(hoja, entrada.codigo);
-    if (!encontrado) return json_({ ok: false, error: 'codigo' });
+    const inv = invitado_(entrada.codigo);
+    if (!inv) return json_({ ok: false, error: 'codigo' });
+    const codigo = normalizar_(entrada.codigo);
+    const hoja = respuestas_();
+    const previa = buscar_(hoja, 1, ENCABEZADOS.length, codigo);
 
-    const cupos = invitado_(encontrado.datos).cupos;
+    if (entrada.regalo !== undefined) {
+      if (!REGALOS.hasOwnProperty(entrada.regalo)) return json_({ ok: false, error: 'regalo' });
+      if (inv.regalo) return json_({ ok: false, error: 'ya-eligio', regalo: inv.regalo });
+      if (previa) hoja.getRange(previa.fila, COL_REGALO).setValue(REGALOS[entrada.regalo]);
+      else hoja.appendRow([codigo, inv.nombre, inv.cupos, '', '', '', '', '', REGALOS[entrada.regalo]]);
+      return json_(invitado_(codigo));
+    }
+
     if (entrada.asiste !== 'si' && entrada.asiste !== 'no') return json_({ ok: false, error: 'asiste' });
 
     const asistentes = entrada.asiste === 'si' ? Number(entrada.asistentes) : 0;
-    if (entrada.asiste === 'si' && !(Number.isInteger(asistentes) && asistentes >= 1 && asistentes <= cupos)) {
+    if (entrada.asiste === 'si' && !(Number.isInteger(asistentes) && asistentes >= 1 && asistentes <= inv.cupos)) {
       return json_({ ok: false, error: 'asistentes' });
     }
 
     const alergias = entrada.asiste === 'si' ? texto_(entrada.alergias) : '';
-    hoja.getRange(encontrado.fila, 5, 1, 5).setValues([[entrada.asiste, asistentes, texto_(entrada.mensaje), new Date(), alergias]]);
-    return json_(invitado_(buscar_(hoja, entrada.codigo).datos));
+    // Columnas A–H: la respuesta nunca borra el regalo (I).
+    const fila = [codigo, inv.nombre, inv.cupos, entrada.asiste, asistentes, texto_(entrada.mensaje), new Date(), alergias];
+    if (previa) hoja.getRange(previa.fila, 1, 1, fila.length).setValues([fila]);
+    else hoja.appendRow(fila.concat(['']));
+    return json_(invitado_(codigo));
   } finally {
     candado.releaseLock();
   }
 }
 
+// Código de 6 letras sacado del nombre y la fila: siempre da lo mismo para la misma lista,
+// así los enlaces de la vista previa son los que quedan en la hoja.
+function codigo_(semilla) {
+  const bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, semilla, Utilities.Charset.UTF_8);
+  let codigo = '';
+  for (let n = 0; n < 6; n++) codigo += ALFABETO.charAt((bytes[n] + 256) % ALFABETO.length);
+  return codigo;
+}
+
 /**
- * Ejecutar desde el editor (▶) cada vez que agreguen invitados.
- * A cada fila con Nombre le pone un código nuevo si no tiene, y su enlace personal.
+ * Ejecutar desde el editor (▶) cada vez que agreguen invitaciones o cambien cupos.
+ * A cada invitación le pone un código si no tiene (F) y reescribe su mensaje con el enlace (E).
  * Nunca cambia un código ya existente: los enlaces enviados siguen sirviendo
- * (si después cambian el nombre o los cupos en la hoja, la web muestra los nuevos).
+ * (si después cambian el nombre o los cupos en la lista, la web muestra los nuevos).
  */
 function generarEnlaces() {
-  const hoja = hoja_();
-  const filas = filas_(hoja);
+  const hoja = lista_();
+  const filas = filas_(hoja, COL.codigo);
   const usados = {};
-  filas.forEach(function (f) { if (normalizar_(f[0])) usados[normalizar_(f[0])] = true; });
+  filas.forEach(function (f) { if (normalizar_(f[COL.codigo - 1])) usados[normalizar_(f[COL.codigo - 1])] = true; });
 
+  hoja.getRange(1, COL.codigo).setValue('Código');
   filas.forEach(function (f, i) {
-    if (!String(f[1]).trim()) return;
-    let codigo = normalizar_(f[0]);
-    if (!codigo) {
-      do {
-        codigo = '';
-        for (let n = 0; n < 6; n++) codigo += ALFABETO.charAt(Math.floor(Math.random() * ALFABETO.length));
-      } while (usados[codigo]);
+    if (!invitacion_(f)) return;
+    let codigo = normalizar_(f[COL.codigo - 1]);
+    for (let intento = 0; !codigo; intento++) {
+      const nuevo = codigo_(f[COL.nombre - 1] + '|' + (i + 2) + '|' + intento);
+      if (!usados[nuevo]) codigo = nuevo;
     }
     usados[codigo] = true;
-    hoja.getRange(i + 2, 1).setValue(codigo);
-    hoja.getRange(i + 2, 4).setValue(SITIO + '?i=' + codigo);
+    hoja.getRange(i + 2, COL.mensaje, 1, 2).setValues([[MENSAJE.replace('[LINK LINK]', SITIO + '/?i=' + codigo), codigo]]);
   });
 }

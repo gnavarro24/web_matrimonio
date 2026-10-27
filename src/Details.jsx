@@ -81,14 +81,14 @@ const dressCode = {
 };
 
 const otherDetails = [
-    { title: 'Solo adultos', text: 'Aunque adoramos a sus pequeños, esta será una celebración solo para adultos. ¡Esperamos que disfruten la noche con nosotros!' },
+    { title: 'Solo adultos*', text: 'Aunque adoramos a sus pequeños, esta será una celebración solo para adultos. ¡Esperamos que disfruten la noche con nosotros!', nota: '*Los bebés de brazos (0 a 1 año) son bienvenidos.' },
 ];
 
 const navLinks = [
-    { title: "Invitación", href: "/invitacion" },
+    { title: "Invitación", href: "/" },
     { title: "Detalles", href: "#top" },
-    { title: "Regalos", href: "/invitacion/regalos" },
-    { title: "RSVP", href: "/invitacion#rsvp" },
+    { title: "Regalos", href: "/regalos" },
+    { title: "RSVP", href: "/#rsvp" },
 ];
 
 // Estilo de la página: secciones que alternan verde (#4a4529, texto crema) y beige (#f7f2e9, texto verde).
@@ -173,7 +173,7 @@ function Details() {
         <div id="top" className="pagina-verde min-h-screen bg-[#4a4529] text-[#f7f2e9] overflow-clip">
             <Navbar navLinks={navLinks} />
             <a
-                href="/invitacion"
+                href="/"
                 onClick={volver}
                 className="fixed left-4 top-[88px] z-40 inline-flex items-center gap-2 min-h-[44px] px-4 bg-[#f7f2e9]/95 text-[#4a4529] border border-[#4a4529]/30 shadow-md font-sans text-xs font-bold uppercase tracking-[0.2em] transition-opacity hover:opacity-80"
             >
@@ -344,6 +344,7 @@ function Details() {
                         <div key={item.title}>
                             <Label className="!text-[22px] md:!text-[26px]">{item.title}</Label>
                             <p className={`mt-3 ${body}`}>{item.text}</p>
+                            {item.nota && <p className={`mt-3 ${body} opacity-80`}>{item.nota}</p>}
                             {item.link && (
                                 <a href={item.link.href} className={`${btn} mt-5`}>
                                     {item.link.label}
@@ -361,7 +362,7 @@ function Details() {
             <Section photo={poolPhoto} photoClass="[object-position:50%_40%]" veil="opacity-90" className="!py-[88px] md:!py-[120px] text-center">
                 <Label as="p">Con amor</Label>
                 <p className="mt-2.5 text-[3.25rem] md:text-[5rem] font-anastasia leading-[1.15] [-webkit-text-stroke-width:0.4px] md:[-webkit-text-stroke-width:0.5px]">Gustavo &amp; Geraldine</p>
-                <a href="/invitacion" className={`${btn} mt-9 md:mt-10`}>
+                <a href="/" className={`${btn} mt-9 md:mt-10`}>
                     Volver a la invitación
                 </a>
             </Section>

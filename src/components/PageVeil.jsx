@@ -1,23 +1,14 @@
 import { useEffect, useState } from 'react';
 import logo from '../assets/decor/logo.png';
+import { navegar } from '../navegacion';
 
-// Telón entre páginas: cada página es una carga completa, así que al tocar un enlace interno el telón
-// sube y cubre, se navega, y la página nueva arranca cubierta (marca en sessionStorage) y lo levanta.
-// "Regresar" de Detalles hace preventDefault (history.back) y por eso no pasa por aquí.
-const KEY = 'velo';
-const nombres = { '/invitacion': 'Invitación', '/invitacion/details': 'Detalles', '/invitacion/regalos': 'Regalos', '/invitacion/historia': 'Nuestra historia' };
-const nombre = (path) => nombres[path.replace(/\/+$/, '')] || '';
+// Telón entre páginas: al tocar un enlace interno el telón sube y cubre, se cambia de página sin recargar
+// (navegacion.js) y se levanta. "Regresar" hace preventDefault (history.back) y por eso no pasa por aquí.
+const nombres = { '/': 'Invitación', '/details': 'Detalles', '/regalos': 'Regalos', '/historia': 'Nuestra historia' };
+const nombre = (path) => nombres[path.replace(/\/+$/, '') || '/'] || '';
 const quieto = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const leer = () => {
-    try {
-        const v = sessionStorage.getItem(KEY);
-        sessionStorage.removeItem(KEY);
-        return v;
-    } catch { return null; }
-};
-
 export default function PageVeil() {
-    const [fase, setFase] = useState(() => (leer() && !quieto() ? 'cubre' : 'oculto'));
+    const [fase, setFase] = useState('oculto');
     const [destino, setDestino] = useState(() => nombre(window.location.pathname));
 
     useEffect(() => {
@@ -26,7 +17,6 @@ export default function PageVeil() {
             return () => clearTimeout(t);
         }
         if (fase === 'sale') {
-            document.documentElement.classList.remove('velo-llega');
             const t = setTimeout(() => setFase('oculto'), 750);
             return () => clearTimeout(t);
         }
@@ -35,27 +25,25 @@ export default function PageVeil() {
     useEffect(() => {
         let timer;
         const onClick = (e) => {
-            if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || quieto()) return;
+            if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
             const a = e.target.closest('a[href]');
             if (!a || (a.target && a.target !== '_self') || a.hasAttribute('download')) return;
             const url = new URL(a.href, window.location.href);
             if (url.origin !== window.location.origin || url.pathname === window.location.pathname) return;
             e.preventDefault();
+            const destino = url.pathname + url.search + url.hash;
+            if (quieto()) return navegar(destino); // sin telón, pero igual sin recargar (la música sigue)
             setDestino(nombre(url.pathname));
             setFase('entra');
             timer = setTimeout(() => {
-                try { sessionStorage.setItem(KEY, '1'); } catch { /* sin telón al llegar */ }
-                window.location.href = url.href;
+                navegar(destino);
+                setFase('cubre');
             }, 650);
         };
-        // Volver con "atrás" restaura la página desde bfcache con el telón puesto: levantarlo.
-        const onShow = (e) => { if (e.persisted) setFase((f) => (f === 'oculto' ? f : 'sale')); };
         document.addEventListener('click', onClick);
-        window.addEventListener('pageshow', onShow);
         return () => {
             clearTimeout(timer);
             document.removeEventListener('click', onClick);
-            window.removeEventListener('pageshow', onShow);
         };
     }, []);
 

@@ -16,7 +16,7 @@ const TheDetails = () => (
     <SectionWrapper id="details" className="bg-[#413c22] py-16 md:py-24 scroll-mt-16">
         <div className="text-center">
             <a
-                href="/invitacion/details"
+                href="/details"
                 className="group relative inline-block w-[min(21rem,100%)] sm:w-[26rem] md:w-[34rem] aspect-[545/555] text-[#413c22] transition-transform duration-500 ease-out hover:scale-105 focus-visible:outline-none focus-visible:scale-105"
             >
                 <span aria-hidden="true" className="absolute left-1/2 -top-[8%] h-[116%] aspect-[880/1372] -translate-x-1/2">

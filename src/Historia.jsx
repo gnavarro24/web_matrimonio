@@ -1,66 +1,39 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Navbar from './components/Navbar';
 import { volver } from './volver';
+import slider1 from './assets/decor/historia/slider_1.webp';
+import slider2 from './assets/decor/historia/slider_2.webp';
 
-// Fotos sin repetir las de otras páginas. Prefijo = grupo, número = orden:
-// a = mosaico de arriba (propuesta en Las Vegas, carpeta "Modificadas con ai"),
-// s = save the date (las que no usan Detalles ni la invitación), p = propuesta (fila del medio de abajo).
-const todas = import.meta.glob('./assets/decor/collage/*.webp', { eager: true, import: 'default' });
-const grupo = (letra) => Object.keys(todas).filter((r) => r.split('/').pop().startsWith(letra)).sort().map((r) => todas[r]);
-const arriba = grupo('a'); // en móvil se ven 9
-const std = grupo('s');
-const abajo = [std.slice(0, 5), grupo('p'), std.slice(5, 10)]; // tres filas: save the date, propuesta, save the date
+// Abajo: una fila que se mueve sola, con 5 fotos a la vista (carrusel_*, en orden). 8 fotos (2026-10-25):
+// sin la 08 ni la 13 (son el banner y el fondo de la piscina de Detalles), ni la 03, 04 y 12 (casi iguales a otras).
+const todas = import.meta.glob('./assets/decor/historia/carrusel_*.webp', { eager: true, import: 'default' });
+const carrusel = Object.keys(todas).sort().map((r) => todas[r]);
 
 const navLinks = [
-    { title: "Invitación", href: "/invitacion" },
-    { title: "Detalles", href: "/invitacion/details" },
-    { title: "Regalos", href: "/invitacion/regalos" },
-    { title: "RSVP", href: "/invitacion#rsvp" },
+    { title: "Invitación", href: "/" },
+    { title: "Detalles", href: "/details" },
+    { title: "Regalos", href: "/regalos" },
+    { title: "RSVP", href: "/#rsvp" },
 ];
 
 // Un solo párrafo: se lee en el celular. Texto de Gustavo, tal cual.
 const historia = '2019 fue el año en que nos conocimos pero nuestros sueños y planes nos llevarían a lugares diferentes. Tuvieron que pasar mudanzas, cambios de ciudad, nuevos trabajos y una pandemia, hasta que en 2022 una llamada de cumpleaños, un concierto de Maná, un viaje a Punta Cana, y Dios volvió a unir nuestras historias para darle una oportunidad a lo que había nacido años atrás. En 2025 nos dijimos que sí en Las Vegas, entre un concierto de Bruno Mars y una cita en uno de los edificios más altos del mundo. Y desde entonces hemos vivido uno de los años más maravillosos juntos, seguros de que Dios ya nos había escogido a cada uno para este camino.';
 
-// Las fotos aparecen de una en una: cada foto que entra en pantalla se pone en la cola, y la cola muestra una cada PAUSA ms.
-const PAUSA = 140;
-const quieto = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const useCola = () => {
-    const cola = useRef([]);
-    const timer = useRef(null);
-    useEffect(() => () => clearTimeout(timer.current), []);
-    return useCallback((mostrar) => {
-        if (quieto()) return mostrar();
-        cola.current.push(mostrar);
-        if (timer.current) return;
-        const siguiente = () => {
-            const f = cola.current.shift();
-            if (!f) { timer.current = null; return; }
-            f();
-            timer.current = setTimeout(siguiente, PAUSA);
-        };
-        siguiente();
-    }, []);
-};
-
-// Mosaico (diseño D): cada foto entra a la cola al verse y aparece con un leve zoom hacia atrás.
-const Foto = ({ src, encolar, className = '', diferida = false }) => {
-    const [on, setOn] = useState(false);
-    return (
-        <motion.div viewport={{ once: true, amount: 0.3 }} onViewportEnter={() => encolar(() => setOn(true))} className={`overflow-hidden ${className}`}>
-            <img src={src} alt="" loading={diferida ? 'lazy' : undefined} decoding="async" className={`block w-full h-full object-cover transition-[opacity,transform] duration-700 ease-out ${on ? 'opacity-100 scale-100' : 'opacity-0 scale-[1.08]'}`} />
-        </motion.div>
-    );
-};
-
+// Arriba: las fotos se turnan solas con un fundido. `pos` encuadra las caras cuando el celular recorta a lo alto.
+const SLIDES = [{ src: slider1, pos: '62% 40%' }, { src: slider2, pos: '24% 40%' }];
+const CAMBIO_MS = 5000;
 function Historia() {
-    const encolar = useCola();
+    const [slide, setSlide] = useState(0);
+    useEffect(() => {
+        const t = setInterval(() => setSlide((i) => (i + 1) % SLIDES.length), CAMBIO_MS);
+        return () => clearInterval(t);
+    }, []);
     return (
         <div id="top" className="pagina-verde min-h-screen bg-[#4a4529] text-[#f7f2e9] overflow-clip">
             <Navbar navLinks={navLinks} />
             <a
-                href="/invitacion"
+                href="/"
                 onClick={volver}
                 className="fixed left-4 top-[88px] z-40 inline-flex items-center gap-2 min-h-[44px] px-4 bg-[#f7f2e9]/95 text-[#4a4529] border border-[#4a4529]/30 shadow-md font-sans text-xs font-bold uppercase tracking-[0.2em] transition-opacity hover:opacity-80"
             >
@@ -68,8 +41,17 @@ function Historia() {
             </a>
 
             <header className="relative pt-[72px]">
-                <div aria-hidden="true" className="grid grid-cols-3 md:grid-cols-6 gap-[3px] bg-[#3a361f]">
-                    {arriba.map((src, i) => <Foto key={src} src={src} encolar={encolar} diferida={i >= 9} className={`aspect-[3/4] ${i >= 9 ? 'hidden md:block' : ''}`} />)}
+                <div aria-hidden="true" className="relative aspect-[3/4] md:aspect-auto md:h-[85vh] overflow-hidden bg-[#3a361f]">
+                    {SLIDES.map((f, i) => (
+                        <img
+                            key={f.src}
+                            src={f.src}
+                            alt=""
+                            fetchpriority={i === 0 ? 'high' : undefined}
+                            style={{ objectPosition: f.pos }}
+                            className={`absolute inset-0 w-full h-full object-cover transition-[opacity,transform] duration-[1500ms,6500ms] ease-out motion-reduce:transition-none ${slide === i ? 'opacity-100 scale-105' : 'opacity-0 scale-100'}`}
+                        />
+                    ))}
                 </div>
                 <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-56 md:h-72 bg-gradient-to-b from-transparent to-[#4a4529] to-[92%] pointer-events-none" />
                 <h1 className="absolute inset-x-0 -bottom-4 md:-bottom-6 text-center font-anastasia text-[3.5rem] md:text-[5.5rem] leading-[1.05] [text-shadow:0_2px_18px_rgba(0,0,0,0.45)]">Nuestra historia</h1>
@@ -89,13 +71,12 @@ function Historia() {
                 </div>
             </section>
 
-            {/* Cada fila: 4 fotos en móvil, 5 desde md */}
-            <div aria-hidden="true" className="mt-10 flex flex-col gap-[3px]">
-                {abajo.map((fila, f) => (
-                    <div key={f} className="grid grid-cols-4 md:grid-cols-5 gap-[3px]">
-                        {fila.map((src, i) => <Foto key={src} src={src} encolar={encolar} diferida className={`aspect-square ${i === 4 ? 'hidden md:block' : ''}`} />)}
-                    </div>
-                ))}
+            <div aria-hidden="true" className="mt-10 overflow-hidden">
+                <div className="carrusel flex w-max">
+                    {[...carrusel, ...carrusel].map((src, i) => (
+                        <img key={i} src={src} alt="" loading="lazy" decoding="async" className="block w-[20vw] aspect-[2/3] object-cover shrink-0 mr-[3px]" />
+                    ))}
+                </div>
             </div>
         </div>
     );

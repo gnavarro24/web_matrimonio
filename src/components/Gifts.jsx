@@ -6,7 +6,7 @@ const Gifts = () => (
         <div className="max-w-2xl mx-auto text-center">
             <h2 className="mb-10 text-5xl md:text-6xl font-anastasia leading-tight text-black/80">Gifts</h2>
             <a
-                href="/invitacion/regalos"
+                href="/regalos"
                 className="group relative inline-block w-72 h-52 sm:w-80 sm:h-60 md:w-96 md:h-72 -rotate-2 text-dusty-olive transition-transform duration-500 ease-out hover:scale-105 hover:rotate-0 focus-visible:outline-none focus-visible:scale-105"
             >
                 {/* Sobre de correo aéreo: borde a rayas, matasellos y estampilla */}
@@ -52,7 +52,7 @@ const Gifts = () => (
             </a>
             <p className="mt-8 text-lg sm:text-xl md:text-2xl font-cormorant text-black/70">
                 Tu presencia es nuestro mejor regalo. Si además quieres tener un detalle con nosotros,{' '}
-                <a href="/invitacion/regalos" className="underline underline-offset-4 decoration-dusty-olive/60 transition-colors hover:text-black">da clic aquí</a>{' '}
+                <a href="/regalos" className="underline underline-offset-4 decoration-dusty-olive/60 transition-colors hover:text-black">da clic aquí</a>{' '}
                 y ayúdanos a llegar a la meta de nuestro honeymoon o de nuestro primer hogar.
             </p>
         </div>

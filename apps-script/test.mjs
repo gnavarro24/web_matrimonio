@@ -1,28 +1,45 @@
-// Prueba Code.gs en Node con una hoja de cálculo falsa en memoria:  node apps-script/test.mjs
-// `cargar` también lo usa un servidor de prueba local para probar el formulario sin Google.
+// Prueba Code.gs en Node con hojas de cálculo falsas en memoria:  node apps-script/test.mjs
+// `cargar` también lo usan el servidor de prueba local y la vista previa de enlaces.
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { fileURLToPath } from 'node:url';
 
-export function cargar(filas) {
-    const celdas = [['Código', 'Nombre', 'Cupos', 'Enlace', 'Asiste', 'Asistentes', 'Mensaje', 'Respondió', 'Alergias'], ...filas];
-    const hoja = {
-        getLastRow: () => celdas.length,
-        getRange: (fila, col, nFilas = 1, nCols = 1) => ({
-            getValues: () => Array.from({ length: nFilas }, (_, r) => Array.from({ length: nCols }, (_, c) => celdas[fila - 1 + r]?.[col - 1 + c] ?? '')),
-            setValues: (valores) => valores.forEach((v, r) => v.forEach((x, c) => { celdas[fila - 1 + r][col - 1 + c] = x; })),
-            setValue: (x) => { celdas[fila - 1][col - 1] = x; },
-        }),
-    };
+const hojaFalsa = (celdas) => ({
+    getLastRow: () => celdas.length,
+    getRange: (fila, col, nFilas = 1, nCols = 1) => ({
+        getValues: () => Array.from({ length: nFilas }, (_, r) => Array.from({ length: nCols }, (_, c) => celdas[fila - 1 + r]?.[col - 1 + c] ?? '')),
+        setValues: (valores) => valores.forEach((v, r) => v.forEach((x, c) => { (celdas[fila - 1 + r] ??= [])[col - 1 + c] = x; })),
+        setValue: (x) => { (celdas[fila - 1] ??= [])[col - 1] = x; },
+    }),
+    appendRow: (fila) => celdas.push([...fila]),
+});
+
+// `lista`: filas de "Tarjeta Wedding Guest List" sin encabezado: [Invitado, Family Name, Invite sent, # of guests, Mensaje, Código]
+export function cargar(lista) {
+    const celdas = [['Wedding Guest Name(s)', 'Family Name', 'Invite sent', '# of guests', 'Mensaje'], ...lista];
+    const respuestas = []; // la pestaña Invitacion empieza vacía, como en la hoja real
+    const libros = { Lista: hojaFalsa(celdas), Respuestas: hojaFalsa(respuestas) };
     const ctx = vm.createContext({
-        SpreadsheetApp: { openById: () => ({ getSheetByName: () => hoja }) },
+        SpreadsheetApp: {
+            openById: (id) => ({
+                getSheetByName: (nombre) => (id.startsWith('1Yao') && nombre === 'Tarjeta Wedding Guest List' ? libros.Lista
+                    : id.startsWith('1xsl') && nombre === 'Invitacion' ? libros.Respuestas : null),
+            }),
+        },
+        Utilities: {
+            DigestAlgorithm: { SHA_256: 'sha256' }, Charset: { UTF_8: 'utf8' },
+            // Como Apps Script: bytes con signo (-128..127)
+            computeDigest: (alg, texto) => [...createHash(alg).update(texto, 'utf8').digest()].map((b) => (b > 127 ? b - 256 : b)),
+        },
         ContentService: { MimeType: { JSON: 'json' }, createTextOutput: (t) => ({ setMimeType: () => t }) },
         LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
     });
     vm.runInContext(readFileSync(new URL('./Code.gs', import.meta.url), 'utf8'), ctx);
     return {
         celdas,
+        respuestas,
         get: (i) => JSON.parse(vm.runInContext('doGet', ctx)({ parameter: { codigo: i } })),
         post: (body) => JSON.parse(vm.runInContext('doPost', ctx)({ postData: { contents: typeof body === 'string' ? body : JSON.stringify(body) } })),
         generarEnlaces: () => vm.runInContext('generarEnlaces', ctx)(),
@@ -31,15 +48,18 @@ export function cargar(filas) {
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const s = cargar([
-        ['ABC234', 'Familia Pérez', 3, '', '', '', '', ''],
-        ['XYZ789', 'Tía Marta', 1, '', '', '', '', ''],
-        ['', 'Sin código aún', 2, '', '', '', '', ''],
+        ['Ana Pérez', 'Flia Pérez', '', 3, '', 'ABC234'],
+        ['Luis Pérez', 'Flia Pérez', '', '', '', ''], // acompañante: sin cupos propios
+        ['Marta', 'Tía Marta', '', 1, '', 'XYZ789'],
+        ['Nuevo', 'Sin código aún', '', 2, '', ''],
+        ['Sin nombre', '', '', 1, '', ''],
+        ['Repetido', 'Sin código aún', '', 2, '', ''], // mismo nombre que otra invitación
     ]);
 
-    // Consulta: el nombre y los cupos salen de la hoja, no de la URL
-    assert.deepEqual(s.get('abc234 '), { ok: true, nombre: 'Familia Pérez', cupos: 3, asiste: '', asistentes: 0, alergias: '' });
+    // Consulta: el nombre y los cupos salen de la lista, no de la URL
+    assert.deepEqual(s.get('abc234 '), { ok: true, nombre: 'Flia Pérez', cupos: 3, asiste: '', asistentes: 0, alergias: '', regalo: '' });
     assert.deepEqual(s.get('NOEXISTE'), { ok: false, error: 'codigo' });
-    assert.deepEqual(s.get(''), { ok: false, error: 'codigo' }); // no debe coincidir con la fila sin código
+    assert.deepEqual(s.get(''), { ok: false, error: 'codigo' }); // no debe coincidir con filas sin código
     assert.deepEqual(s.get(undefined), { ok: false, error: 'codigo' });
 
     // No se puede confirmar más gente que los cupos, ni colar datos raros
@@ -51,37 +71,60 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     assert.equal(s.post({ codigo: 'NOEXISTE', asiste: 'si', asistentes: 1 }).error, 'codigo');
     assert.equal(s.post({ asiste: 'si', asistentes: 1 }).error, 'codigo');
     assert.equal(s.post('esto no es json').error, 'formato');
-    assert.equal(s.celdas[1][4], '', 'los intentos inválidos no escriben nada');
+    assert.equal(s.respuestas.length, 1, 'los intentos inválidos no escriben respuestas (solo los encabezados)');
 
-    // Confirmar, y luego cambiar la respuesta sobre la misma fila
-    assert.deepEqual(s.post({ codigo: 'abc234', asiste: 'si', asistentes: 2, mensaje: '=HYPERLINK("http://x")', alergias: '=Maní' }),
-        { ok: true, nombre: 'Familia Pérez', cupos: 3, asiste: 'si', asistentes: 2, alergias: "'=Maní" });
-    assert.equal(s.celdas[1][6], '\'=HYPERLINK("http://x")', 'el mensaje no puede guardarse como fórmula');
-    assert.ok(s.celdas[1][7] instanceof Date || typeof s.celdas[1][7] === 'object');
+    // Confirmar crea la fila en Invitacion; cambiar la respuesta la sobrescribe
+    assert.deepEqual(s.post({ codigo: 'abc234', asiste: 'si', asistentes: 3, mensaje: '=HYPERLINK("http://x")', alergias: '=Maní' }),
+        { ok: true, nombre: 'Flia Pérez', cupos: 3, asiste: 'si', asistentes: 3, alergias: "'=Maní", regalo: '' });
+    assert.deepEqual(s.respuestas[0], ['Código', 'Nombre', 'Cupos', 'Asiste', 'Asistentes', 'Mensaje', 'Respondió', 'Alergias', 'Regalo']);
+    assert.deepEqual(s.respuestas[1].slice(0, 6), ['ABC234', 'Flia Pérez', 3, 'si', 3, '\'=HYPERLINK("http://x")'], 'el mensaje no puede guardarse como fórmula');
+    assert.ok(s.respuestas[1][6] instanceof Date || typeof s.respuestas[1][6] === 'object');
     assert.equal(s.get('ABC234').asiste, 'si');
-    assert.deepEqual(s.post({ codigo: 'ABC234', asiste: 'no', asistentes: 3, mensaje: 'x'.repeat(900) }).asistentes, 0);
-    assert.equal(s.celdas[1][6].length, 500);
-    assert.equal(s.celdas[1][8], '', 'quien no asiste no deja alergias guardadas');
-    assert.equal(s.celdas[2][4], '', 'no toca filas de otros invitados');
+    assert.equal(s.post({ codigo: 'ABC234', asiste: 'no', asistentes: 3, mensaje: 'x'.repeat(900) }).asistentes, 0);
+    assert.equal(s.respuestas[1][5].length, 500);
+    assert.equal(s.respuestas[1][7], '', 'quien no asiste no deja alergias guardadas');
 
-    // Pulsar muchas veces confirmar / no asistir sobrescribe la misma fila: nunca crea registros
-    const filasAntes = s.celdas.length;
+    // Pulsar muchas veces confirmar / no asistir sobrescribe la misma fila
     for (const asiste of ['si', 'no', 'si', 'si', 'no', 'si']) s.post({ codigo: 'ABC234', asiste, asistentes: 3 });
-    assert.equal(s.celdas.length, filasAntes, 'no se crean filas nuevas');
-    assert.equal(s.celdas.filter((f) => f[0] === 'ABC234').length, 1, 'el invitado sigue teniendo una sola fila');
-    assert.deepEqual(s.celdas[1].slice(4, 6), ['si', 3], 'queda la última respuesta');
-    s.post({ codigo: 'ABC234', asiste: 'no' });
-    assert.deepEqual(s.celdas[1].slice(4, 6), ['no', 0]);
+    assert.equal(s.respuestas.length, 2, 'una sola fila por invitación');
+    assert.deepEqual(s.respuestas[1].slice(3, 5), ['si', 3], 'queda la última respuesta');
+    s.post({ codigo: 'XYZ789', asiste: 'no' });
+    assert.equal(s.respuestas.length, 3);
+    assert.deepEqual(s.respuestas[1].slice(3, 5), ['si', 3], 'no toca la fila de otra invitación');
 
-    // Enlaces: conserva los códigos existentes y crea los que faltan
+    // Honeymoon fund: un solo plan por invitación, y responder después no lo borra
+    assert.equal(s.post({ codigo: 'ABC234', regalo: 'yate' }).error, 'regalo');
+    assert.equal(s.post({ codigo: 'ABC234', regalo: 'constructor' }).error, 'regalo', 'no acepta propiedades heredadas');
+    assert.equal(s.post({ codigo: 'NOEXISTE', regalo: 'spa' }).error, 'codigo');
+    assert.equal(s.post({ codigo: 'abc234', regalo: 'spa' }).regalo, 'spa');
+    assert.equal(s.respuestas[1][8], 'Un día de spa', 'en la hoja queda el título');
+    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'hotel' }), { ok: false, error: 'ya-eligio', regalo: 'spa' });
+    assert.equal(s.respuestas[1][8], 'Un día de spa', 'no se puede cambiar de plan');
+    s.post({ codigo: 'ABC234', asiste: 'no' });
+    assert.equal(s.get('ABC234').regalo, 'spa', 'cambiar la respuesta no borra el regalo');
+
+    // Enlaces: conserva los códigos existentes, crea los que faltan y escribe el mensaje solo en invitaciones
     s.generarEnlaces();
-    assert.equal(s.celdas[1][0], 'ABC234');
-    assert.equal(s.celdas[1][3], 'https://PEGAR_DOMINIO/invitacion?i=ABC234');
-    assert.match(s.celdas[3][0], /^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{6}$/);
-    assert.equal(s.get(s.celdas[3][0]).nombre, 'Sin código aún');
-    const antes = s.celdas[3][0];
+    assert.equal(s.celdas[0][5], 'Código');
+    assert.equal(s.celdas[1][5], 'ABC234');
+    assert.match(s.celdas[1][4], /^¡Hola! 🤍💌 .* nuestro gran día: https:\/\/thenavelas\.website\/\?i=ABC234 💍 Con cariño, The Navelas 🤍$/);
+    assert.equal(s.celdas[2][4], '', 'el acompañante sin cupos no recibe mensaje');
+    assert.equal(s.celdas[2][5], '');
+    assert.equal(s.celdas[5][5], '', 'sin nombre no hay invitación');
+    const [nuevo, repetido] = [s.celdas[4][5], s.celdas[6][5]];
+    assert.match(nuevo, /^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{6}$/);
+    assert.notEqual(nuevo, repetido, 'dos invitaciones con el mismo nombre tienen códigos distintos');
+    assert.equal(s.get(nuevo).nombre, 'Sin código aún');
+    // Elegir regalo antes de confirmar asistencia crea la fila solo con el regalo
+    assert.equal(s.post({ codigo: nuevo, regalo: 'tren' }).regalo, 'tren');
+    assert.deepEqual(s.respuestas.at(-1), [nuevo, 'Sin código aún', 2, '', '', '', '', '', 'Los viajes en tren']);
+    assert.equal(s.post({ codigo: nuevo, asiste: 'si', asistentes: 2 }).regalo, 'tren', 'confirmar después conserva el regalo');
     s.generarEnlaces();
-    assert.equal(s.celdas[3][0], antes, 'volver a ejecutarlo no cambia códigos');
+    assert.equal(s.celdas[4][5], nuevo, 'volver a ejecutarlo no cambia códigos');
+
+    // Los códigos son los mismos en cada ejecución desde cero (la vista previa coincide con la hoja)
+    const desdeCero = () => { const h = cargar([['Nuevo', 'Sin código aún', '', 2, '', '']]); h.generarEnlaces(); return h.celdas[1][5]; };
+    assert.equal(desdeCero(), desdeCero());
 
     console.log('OK: Code.gs pasa todas las comprobaciones');
 }

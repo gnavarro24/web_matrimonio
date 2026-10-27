@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Heart, Check, Copy } from 'lucide-react';
+import { Heart, Check, Copy, ArrowLeft } from 'lucide-react';
 import Navbar from './components/Navbar';
+import { volver } from './volver';
 import SectionWrapper from './components/SectionWrapper';
 import { PastaWineIcon, PlaneIcon, BedIcon, TrainIcon, HouseIcon, MapIcon, CarIcon, ChampagneIcon, SpaIcon, BankIcon, GlobeIcon } from './components/GiftIcons';
 import { gifts, bankAccounts } from './gifts';
+import { useInvitado, RSVP_API } from './useInvitado';
 
 const API = '/api/regalos';
 const icons = {
@@ -23,10 +25,10 @@ const bankIcons = { colombia: BankIcon, usa: GlobeIcon };
 const blobs = ['58% 42% 55% 45% / 48% 56% 44% 52%', '45% 55% 42% 58% / 56% 46% 54% 44%', '52% 48% 60% 40% / 44% 52% 48% 56%'];
 
 const navLinks = [
-    { title: "Invitación", href: "/invitacion" },
-    { title: "Detalles", href: "/invitacion/details" },
+    { title: "Invitación", href: "/" },
+    { title: "Detalles", href: "/details" },
     { title: "Regalos", href: "#top" },
-    { title: "RSVP", href: "/invitacion#rsvp" },
+    { title: "RSVP", href: "/#rsvp" },
 ];
 
 const btn = "inline-block px-8 py-4 border border-dusty-olive tracking-widest uppercase text-sm transition-all duration-300";
@@ -53,13 +55,12 @@ const Route = () => {
     );
 };
 
-// Un aporte por regalo y por dispositivo, para que el contador sea de personas.
-const storageKey = (id) => `regalo_${id}`;
-const alreadyGiven = () => Object.fromEntries(gifts.map((g) => [g.id, !!localStorage.getItem(storageKey(g.id))]));
-
+// Un solo plan por invitación: la elección queda en la hoja (columna Regalo de "Invitacion", ver apps-script/Code.gs)
+// y además suma en el contador de la página (/api/regalos).
 function Regalos() {
+    const { code, guest, setGuest, status } = useInvitado();
+    const elegido = guest?.regalo || '';
     const [counts, setCounts] = useState({});
-    const [given, setGiven] = useState(alreadyGiven);
     const [sending, setSending] = useState(null);
     const [burst, setBurst] = useState(null); // regalo cuyo corazón está volando
     const [error, setError] = useState('');
@@ -82,17 +83,24 @@ function Regalos() {
     }, []);
 
     const give = async (id) => {
-        setSending(id);
         setError('');
+        if (!guest) {
+            return setError(status === 'loading' ? 'Un momento, estamos cargando tu invitación…' : 'Para elegir tu plan, abre el enlace personal de tu invitación.');
+        }
+        setSending(id);
         try {
-            const res = await fetch(API, { method: 'POST', body: JSON.stringify({ id }) });
-            if (!res.ok) throw new Error(res.status);
-            setCounts((await res.json()).counts);
-            localStorage.setItem(storageKey(id), new Date().toISOString());
-            setGiven((g) => ({ ...g, [id]: true }));
-            setBurst(id);
+            const data = await (await fetch(RSVP_API, { method: 'POST', body: JSON.stringify({ codigo: code, regalo: id }) })).json();
+            if (data.error === 'ya-eligio') {
+                setGuest({ ...guest, regalo: data.regalo });
+            } else {
+                if (!data.ok) throw new Error(data.error);
+                setGuest(data);
+                setBurst(id);
+                // El contador es solo para la barra: si falla, la elección ya quedó guardada en la hoja.
+                fetch(API, { method: 'POST', body: JSON.stringify({ id }) }).then((r) => r.json()).then((d) => setCounts(d.counts)).catch(() => {});
+            }
         } catch {
-            setError('No pudimos guardar tu aporte. Intenta de nuevo en un momento.');
+            setError('No pudimos guardar tu elección. Intenta de nuevo en un momento.');
         }
         setSending(null);
     };
@@ -112,6 +120,13 @@ function Regalos() {
     return (
         <div id="top" className="min-h-screen bg-cream overflow-clip">
             <Navbar navLinks={navLinks} />
+            <a
+                href="/"
+                onClick={volver}
+                className="fixed left-4 top-[88px] z-40 inline-flex items-center gap-2 min-h-[44px] px-4 bg-[#f7f2e9]/95 text-[#4a4529] border border-[#4a4529]/30 shadow-md font-sans text-xs font-bold uppercase tracking-[0.2em] transition-opacity hover:opacity-80"
+            >
+                <ArrowLeft size={16} /> Regresar
+            </a>
 
             <header className={`pt-28 md:pt-32 px-6 text-center ${ink}`}>
                 <Route />
@@ -131,6 +146,11 @@ function Regalos() {
             </header>
 
             <SectionWrapper className={`py-12 md:py-16 ${ink}`}>
+                <p className="max-w-2xl mx-auto mb-8 text-center text-xl font-cormorant italic font-medium">
+                    {elegido
+                        ? <>Tu plan elegido: <strong className="not-italic font-semibold">{gifts.find((g) => g.id === elegido)?.title}</strong>. ¡Gracias!</>
+                        : 'Cada invitación puede elegir un solo plan.'}
+                </p>
                 <p role="alert" className="mb-6 text-center text-lg font-cormorant text-red-700 empty:hidden">{error}</p>
                 <div className="max-w-[1072px] mx-auto grid gap-x-[30px] gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
                     {gifts.map(({ id, title, text, goal, cta }, i) => {
@@ -170,14 +190,14 @@ function Regalos() {
                                         {percent >= 100 ? `${count} aportes` : `${count} de ${goal} aportes · ${percent}%`}
                                     </p>
 
-                                    {given[id] ? (
+                                    {elegido === id ? (
                                         <p className="min-h-[52px] flex items-center justify-center bg-dusty-olive text-porcelain font-anastasia text-3xl leading-none">¡Mil gracias!</p>
                                     ) : (
                                         <button
                                             type="button"
                                             onClick={() => give(id)}
-                                            disabled={sending === id}
-                                            className="min-h-[52px] w-full px-4 py-3 border border-dusty-olive text-[#586748] font-sans text-[13px] font-bold uppercase tracking-[0.2em] transition duration-300 hover:bg-dusty-olive hover:text-porcelain active:scale-95 disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a4529]"
+                                            disabled={!!sending || !!elegido}
+                                            className="min-h-[52px] w-full px-4 py-3 border border-dusty-olive text-[#586748] font-sans text-[13px] font-bold uppercase tracking-[0.2em] transition duration-300 hover:bg-dusty-olive hover:text-porcelain active:scale-95 disabled:opacity-60 disabled:pointer-events-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a4529]"
                                         >
                                             {cta}
                                         </button>
@@ -255,10 +275,10 @@ function Regalos() {
             </SectionWrapper>
 
             <div className="px-6 pb-16 flex flex-col sm:flex-row gap-4 justify-center items-center text-center">
-                <a href="/invitacion#rsvp" className={`${btn} w-full sm:w-auto bg-dusty-olive text-white hover:bg-dry-sage hover:border-dry-sage`}>
+                <a href="/#rsvp" className={`${btn} w-full sm:w-auto bg-dusty-olive text-white hover:bg-dry-sage hover:border-dry-sage`}>
                     Confirmar asistencia
                 </a>
-                <a href="/invitacion" className={`${btn} w-full sm:w-auto text-dusty-olive hover:bg-dusty-olive hover:text-white`}>
+                <a href="/" className={`${btn} w-full sm:w-auto text-dusty-olive hover:bg-dusty-olive hover:text-white`}>
                     Volver a la invitación
                 </a>
             </div>

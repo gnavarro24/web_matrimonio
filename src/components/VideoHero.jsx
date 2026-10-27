@@ -44,7 +44,7 @@ const VideoHero = ({ videoShouldPlay = false }) => {
                     transition={{ delay: 0.8, duration: 1 }}
                     className="text-[3rem] leading-[1.1] font-anastasia overflow-visible pr-2 drop-shadow-lg"
                 >
-                    We are getting married
+                    Love has a date
                 </motion.p>
 
                 <motion.div

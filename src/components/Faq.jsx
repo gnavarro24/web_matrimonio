@@ -13,7 +13,7 @@ const questions = [
     },
     {
         question: "¿Cómo confirmo mi asistencia?",
-        answer: <>Con el enlace personal que te enviamos: en la invitación está la sección <a href="/invitacion#rsvp" className={enlace}>«Confirma tu asistencia»</a>. Si tus planes cambian, puedes volver a entrar y cambiar tu respuesta.</>,
+        answer: <>Con el enlace personal que te enviamos: en la invitación está la sección <a href="/#rsvp" className={enlace}>«Confirma tu asistencia»</a>. Si tus planes cambian, puedes volver a entrar y cambiar tu respuesta.</>,
     },
     {
         question: "¿Puedo llevar acompañante?",
@@ -25,7 +25,7 @@ const questions = [
     },
     {
         question: "¿Puedo llevar niños?",
-        answer: "Aunque adoramos a sus pequeños, esta será una celebración solo para adultos. Agradecemos su comprensión.",
+        answer: "Aunque adoramos a sus pequeños, esta será una celebración solo para adultos. Los bebés de brazos (0 a 1 año) sí son bienvenidos.",
     },
     {
         question: "¿Cuál es el código de vestimenta?",
@@ -37,7 +37,7 @@ const questions = [
     },
     {
         question: "¿Qué les podemos regalar?",
-        answer: <>Tu presencia es nuestro mejor regalo. Si además quieres tener un detalle con nosotros, en la <a href="/invitacion/regalos" className={enlace}>página de Regalos</a> puedes ayudarnos a llegar a la meta de nuestro honeymoon o de nuestro primer hogar.</>,
+        answer: <>Tu presencia es nuestro mejor regalo. Si además quieres tener un detalle con nosotros, en la <a href="/regalos" className={enlace}>página de Regalos</a> puedes ayudarnos a llegar a la meta de nuestro honeymoon o de nuestro primer hogar.</>,
     },
 ];
 

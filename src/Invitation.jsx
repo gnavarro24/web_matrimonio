@@ -8,44 +8,23 @@ import NuestraHistoria from './components/NuestraHistoria';
 import Contacto from './components/Contacto';
 import Confirmacion from './components/Confirmacion';
 import WelcomeModal from './components/WelcomeModal';
-import SimpleAudioTest from './components/SimpleAudioTest';
 import { useInvitado } from './useInvitado';
-import standByMeAudio from './assets/decor/stand-by-me.m4a';
+import { yaNavego } from './navegacion';
 
 const navLinks = [
     { title: "Inicio", href: "#home" },
-    { title: "Detalles", href: "/invitacion/details" },
-    { title: "Regalos", href: "/invitacion/regalos" },
+    { title: "Detalles", href: "/details" },
+    { title: "Regalos", href: "/regalos" },
     { title: "RSVP", href: "#rsvp" },
 ];
 
-// Quien vuelve desde una subpágina (atrás, "Regresar", menú) no ve el sobre otra vez; al refrescar sí sale.
-// La marca la deja main.jsx al abrir una subpágina y se gasta aquí. No sirve el tipo de navegación:
-// Safari en iPhone reporta "reload" al volver atrás cuando recarga la página.
-const MARCA = 'en-subpagina';
-const vieneDeAdentro = () => {
-    try {
-        const si = !!sessionStorage.getItem(MARCA);
-        sessionStorage.removeItem(MARCA);
-        return si;
-    } catch { return false; }
-};
-const llegaDeSubpagina = vieneDeAdentro(); // una vez por carga (StrictMode llamaría dos veces un inicializador de useState)
-
+// El sobre sale solo cuando la invitación es la primera página de la carga: al volver desde una subpágina
+// (atrás, "Regresar", menú) no se recarga y no sale otra vez; al refrescar, sí.
 function Invitation() {
-    const saltarSobre = llegaDeSubpagina;
+    const [saltarSobre] = useState(yaNavego);
     const [showModal, setShowModal] = useState(!saltarSobre);
     const [revelado, setRevelado] = useState(saltarSobre); // la página se ve mientras el sobre se desvanece encima
-    // Sin sobre no hay toque que arranque la música: se monta igual (respeta la pausa guardada).
-    const [audioEnabled, setAudioEnabled] = useState(saltarSobre);
     const invitado = useInvitado();
-
-    // Vuelta atrás restaurada de la caché del navegador (sin recargar): gastar la marca para que refrescar muestre el sobre
-    useEffect(() => {
-        const alVolver = (e) => { if (e.persisted) try { sessionStorage.removeItem(MARCA); } catch { /* nada */ } };
-        window.addEventListener('pageshow', alVolver);
-        return () => window.removeEventListener('pageshow', alVolver);
-    }, []);
 
     // Bloquear scroll mientras el modal está abierto
     useEffect(() => {
@@ -63,7 +42,7 @@ function Invitation() {
 
     const handleCloseModal = () => {
         setShowModal(false);
-        // Llegando desde /invitacion/details con #rsvp: saltar a la sección tras abrir
+        // Llegando desde /details con #rsvp: saltar a la sección tras abrir
         if (window.location.hash) {
             setTimeout(() => document.querySelector(window.location.hash)?.scrollIntoView(), 100);
         }
@@ -88,13 +67,12 @@ function Invitation() {
             <WelcomeModal
                 isOpen={showModal}
                 onClose={handleCloseModal}
-                onStartMusic={() => setAudioEnabled(true)}
+                onStartMusic={() => window.dispatchEvent(new Event('musica-activar'))}
                 onRevelar={() => setRevelado(true)}
                 envelope
                 guestName={invitado.guest?.nombre || ''}
             />
 
-            {audioEnabled && <SimpleAudioTest src={standByMeAudio} />}
         </div>
     );
 }
