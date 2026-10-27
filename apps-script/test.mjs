@@ -106,9 +106,13 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     assert.equal(s.respuestas[1][8], 'Un día de spa, Las noches de hotel');
     assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'spa' }).regalos, ['spa', 'hotel'], 'repetir un plan no lo duplica');
     assert.equal(s.respuestas[1][8], 'Un día de spa, Las noches de hotel');
+    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'tren', quitar: true }).regalos, ['spa', 'hotel'], 'quitar uno que no tenía no cambia nada');
+    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'spa', quitar: true }).regalos, ['hotel']);
+    assert.equal(s.respuestas[1][8], 'Las noches de hotel');
+    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'spa' }).regalos, ['hotel', 'spa'], 'se puede volver a elegir');
     s.post({ codigo: 'ABC234', asiste: 'no' });
-    assert.deepEqual(s.get('ABC234').regalos, ['spa', 'hotel'], 'cambiar la respuesta no borra los regalos');
-    assert.deepEqual(s.regalos(), { ok: true, counts: { spa: 1, hotel: 1 } }, 'el contador sale de la hoja');
+    assert.deepEqual(s.get('ABC234').regalos, ['hotel', 'spa'], 'cambiar la respuesta no borra los regalos');
+    assert.deepEqual(s.regalos(), { ok: true, counts: { hotel: 1, spa: 1 } }, 'el contador sale de la hoja');
 
     // Enlaces: conserva los códigos existentes, crea los que faltan y escribe el mensaje solo en invitaciones
     s.generarEnlaces();

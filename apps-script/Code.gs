@@ -163,6 +163,7 @@ function contarRegalos_() {
 
 // POST { codigo, asiste: 'si' | 'no', asistentes, mensaje, alergias } → guarda la respuesta en la fila de la invitación.
 // POST { codigo, regalo } → suma ese plan del Honeymoon fund a los de la invitación (sin repetirlo).
+// POST { codigo, regalo, quitar: true } → lo quita.
 function doPost(e) {
   let entrada;
   try {
@@ -182,8 +183,11 @@ function doPost(e) {
 
     if (entrada.regalo !== undefined) {
       if (!REGALOS.hasOwnProperty(entrada.regalo)) return json_({ ok: false, error: 'regalo' });
-      if (inv.regalos.indexOf(entrada.regalo) >= 0) return json_(inv); // ya lo tenía: no se duplica
-      const celda = celdaRegalos_(inv.regalos.concat([entrada.regalo]));
+      const tiene = inv.regalos.indexOf(entrada.regalo) >= 0;
+      if (tiene !== !!entrada.quitar) return json_(inv); // ya lo tenía (o ya no lo tenía): nada que cambiar
+      const celda = celdaRegalos_(entrada.quitar
+        ? inv.regalos.filter(function (id) { return id !== entrada.regalo; })
+        : inv.regalos.concat([entrada.regalo]));
       if (previa) hoja.getRange(previa.fila, COL_REGALO).setValue(celda);
       else hoja.appendRow([codigo, inv.nombre, inv.cupos, '', '', '', '', '', celda]);
       return json_(invitado_(codigo));

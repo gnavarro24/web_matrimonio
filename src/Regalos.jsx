@@ -86,7 +86,8 @@ function Regalos() {
         };
     }, []);
 
-    const give = async (id) => {
+    // quitar = true deshace la elección de ese plan (también queda así en la hoja).
+    const give = async (id, quitar = false) => {
         setError('');
         if (!guest) {
             return setError(status === 'loading' ? 'Un momento, estamos cargando tu invitación…' : 'Para elegir tu plan, abre el enlace personal de tu invitación.');
@@ -94,21 +95,21 @@ function Regalos() {
         // Se ve al instante (la hoja tarda unos segundos en responder); si no se guarda, se deshace.
         const antes = guest;
         const sumar = (n) => setCounts((c) => ({ ...c, [id]: Math.max(0, (c[id] || 0) + n) }));
-        setGuest({ ...guest, regalos: [...elegidos, id] });
-        sumar(1);
-        setBurst(id);
+        setGuest({ ...guest, regalos: quitar ? elegidos.filter((g) => g !== id) : [...elegidos, id] });
+        sumar(quitar ? -1 : 1);
+        if (!quitar) setBurst(id);
         setSending(id); // mientras tanto los demás botones esperan: dos guardados cruzados se pisarían
         guardando.current = true;
         try {
-            const data = await (await fetch(RSVP_API, { method: 'POST', body: JSON.stringify({ codigo: code, regalo: id }) })).json();
+            const data = await (await fetch(RSVP_API, { method: 'POST', body: JSON.stringify({ codigo: code, regalo: id, quitar }) })).json();
             if (!data.ok) throw new Error(data.error);
             setGuest(data);
             // Por si ya lo había elegido desde otro celular: el número exacto sale de la hoja.
             await pedirConteo().then((d) => d.ok && setCounts(d.counts)).catch(() => {});
         } catch {
             setGuest(antes);
-            sumar(-1);
-            setError('No pudimos guardar tu elección. Intenta de nuevo en un momento.');
+            sumar(quitar ? 1 : -1);
+            setError(quitar ? 'No pudimos quitar este plan. Intenta de nuevo en un momento.' : 'No pudimos guardar tu elección. Intenta de nuevo en un momento.');
         }
         guardando.current = false;
         setSending(null);
@@ -157,7 +158,7 @@ function Regalos() {
             <SectionWrapper className={`py-12 md:py-16 ${ink}`}>
                 <p className="max-w-2xl mx-auto mb-8 text-center text-xl font-cormorant italic font-medium">
                     {elegidos.length
-                        ? <>Elegiste: <strong className="not-italic font-semibold">{gifts.filter((g) => elegidos.includes(g.id)).map((g) => g.title).join(', ')}</strong>. ¡Gracias! Puedes sumar los planes que quieras.</>
+                        ? <>Elegiste: <strong className="not-italic font-semibold">{gifts.filter((g) => elegidos.includes(g.id)).map((g) => g.title).join(', ')}</strong>. ¡Gracias! Puedes sumar o quitar los planes que quieras.</>
                         : 'Elige uno o varios planes.'}
                 </p>
                 <p role="alert" className="mb-6 text-center text-lg font-cormorant text-red-700 empty:hidden">{error}</p>
@@ -199,12 +200,22 @@ function Regalos() {
                                         {percent >= 100 ? `${count} aportes` : `${count} de ${goal} aportes · ${percent}%`}
                                     </p>
 
-                                    {elegidos.includes(id) ? (
-                                        <p className="min-h-[52px] flex items-center justify-center gap-2 bg-dusty-olive text-porcelain font-anastasia text-3xl leading-none" aria-live="polite">
-                                            {sending === id
-                                                ? <><Loader2 size={18} className="animate-spin" /><span className="font-sans text-[13px] font-bold uppercase tracking-[0.2em]">Guardando…</span></>
-                                                : '¡Mil gracias!'}
+                                    {sending === id ? (
+                                        <p className="min-h-[52px] flex items-center justify-center gap-2 bg-dusty-olive text-porcelain" aria-live="polite">
+                                            <Loader2 size={18} className="animate-spin" /><span className="font-sans text-[13px] font-bold uppercase tracking-[0.2em]">Guardando…</span>
                                         </p>
+                                    ) : elegidos.includes(id) ? (
+                                        <>
+                                            <p className="min-h-[52px] flex items-center justify-center bg-dusty-olive text-porcelain font-anastasia text-3xl leading-none">¡Mil gracias!</p>
+                                            <button
+                                                type="button"
+                                                onClick={() => give(id, true)}
+                                                disabled={!!sending}
+                                                className="mx-auto min-h-[44px] px-3 text-[#586748] font-cormorant italic text-lg underline underline-offset-4 decoration-dusty-olive/50 transition-opacity hover:opacity-70 disabled:opacity-50"
+                                            >
+                                                Quitar este plan
+                                            </button>
+                                        </>
                                     ) : (
                                         <button
                                             type="button"
