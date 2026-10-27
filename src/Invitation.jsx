@@ -13,9 +13,10 @@ import { yaNavego } from './navegacion';
 
 const navLinks = [
     { title: "Inicio", href: "#home" },
+    { title: "RSVP", href: "#rsvp" },
     { title: "Detalles", href: "/details" },
     { title: "Regalos", href: "/regalos" },
-    { title: "RSVP", href: "#rsvp" },
+    { title: "Nuestra historia", href: "/historia" },
 ];
 
 // El sobre sale solo cuando la invitación es la primera página de la carga: al volver desde una subpágina

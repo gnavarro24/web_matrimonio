@@ -12,9 +12,10 @@ const carrusel = Object.keys(todas).sort().map((r) => todas[r]);
 
 const navLinks = [
     { title: "Invitación", href: "/" },
+    { title: "RSVP", href: "/#rsvp" },
     { title: "Detalles", href: "/details" },
     { title: "Regalos", href: "/regalos" },
-    { title: "RSVP", href: "/#rsvp" },
+    { title: "Nuestra historia", href: "#top" },
 ];
 
 // Un solo párrafo: se lee en el celular. Texto de Gustavo, tal cual.
@@ -54,7 +55,8 @@ function Historia() {
                     ))}
                 </div>
                 <div aria-hidden="true" className="absolute inset-x-0 bottom-0 h-56 md:h-72 bg-gradient-to-b from-transparent to-[#4a4529] to-[92%] pointer-events-none" />
-                <h1 className="absolute inset-x-0 -bottom-4 md:-bottom-6 text-center font-anastasia text-[3.5rem] md:text-[5.5rem] leading-[1.05] [text-shadow:0_2px_18px_rgba(0,0,0,0.45)]">Nuestra historia</h1>
+                {/* La letra Anastasia dibuja el trazo ~0.2em a la derecha de su caja: el pr lo recentra */}
+                <h1 className="absolute inset-x-0 -bottom-4 md:-bottom-6 pr-[0.4em] text-center font-anastasia text-[3.5rem] md:text-[5.5rem] leading-[1.05] [text-shadow:0_2px_18px_rgba(0,0,0,0.45)]">Nuestra historia</h1>
             </header>
 
             <section className="max-w-[640px] mx-auto px-7 pt-10 md:pt-14 text-center">
@@ -64,7 +66,7 @@ function Historia() {
             <section className="max-w-[420px] mx-8 sm:mx-auto mt-7 bg-[#f7f2e9] text-[#4a4529] p-1 shadow-[0_12px_24px_rgba(0,0,0,0.3)]">
                 <div className="border border-[#4a4529]/35 px-5 pt-5 pb-4 text-center">
                     <p className="font-cormorant italic font-semibold text-[17px] md:text-[19px] leading-[1.35]">
-                        Así como es de especial nuestra historia y seguramente tú has tenido un rol en ella, soñamos con que nos acompañes en nuestro día.
+                        Así como es de especial nuestra historia, seguramente tú has tenido un rol en ella, soñamos con que nos acompañes en nuestro día.
                     </p>
                     <p className="mt-3 font-cormorant font-bold uppercase tracking-[0.24em] text-[11px] text-[#586748]">Con amor</p>
                     <p className="font-anastasia text-[2rem] md:text-[2.4rem] leading-[1.15] whitespace-nowrap">Gustavo &amp; Geraldine</p>

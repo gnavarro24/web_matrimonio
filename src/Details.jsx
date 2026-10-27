@@ -51,7 +51,7 @@ const partnerHotel = {
 // instagram: usuario sin @ · phone: con indicativo, ej. '+57 300 123 4567' (vacío = no se muestra)
 // firstName: con quién se saluda en el mensaje de WhatsApp. Precios y condiciones los da cada una por WhatsApp.
 const makeupArtists = [
-    { name: 'Camila Bustamante', firstName: 'Camila', detail: 'Maquillaje y peinado', badge: 'Maquilladora de la novia', note: 'Camila maquillará a la novia; su equipo atenderá a las invitadas.', instagram: 'camibustamantemakeup', phone: '+57 319 7417234' },
+    { name: 'Camila Bustamante', firstName: 'Camila', detail: 'Maquillaje y peinado', badge: 'Maquilladora de la novia', note: 'Camila no está disponible, su equipo estará a tu disposición para lo que necesites.', instagram: 'camibustamantemakeup', phone: '+57 319 7417234' },
     { name: 'Catalina Rico', firstName: 'Catalina', detail: 'Maquillaje y peinado', instagram: 'cataricomakeup', phone: '+57 301 4482958' },
     { name: 'Lili Uribe', firstName: 'Lili', detail: 'Maquillaje y peinado', instagram: 'liliuribemakeup', phone: '+57 301 6133512' },
 ];
@@ -81,14 +81,15 @@ const dressCode = {
 };
 
 const otherDetails = [
-    { title: 'Solo adultos*', text: 'Aunque adoramos a sus pequeños, esta será una celebración solo para adultos. ¡Esperamos que disfruten la noche con nosotros!', nota: '*Los bebés de brazos (0 a 1 año) son bienvenidos.' },
+    { title: 'Solo adultos', text: 'Aunque adoramos a sus pequeños, esta será una celebración solo para adultos. ¡Esperamos que disfruten la noche con nosotros!', nota: '*Los bebés de brazos (0 a 1 año) son bienvenidos.' },
 ];
 
 const navLinks = [
     { title: "Invitación", href: "/" },
+    { title: "RSVP", href: "/#rsvp" },
     { title: "Detalles", href: "#top" },
     { title: "Regalos", href: "/regalos" },
-    { title: "RSVP", href: "/#rsvp" },
+    { title: "Nuestra historia", href: "/historia" },
 ];
 
 // Estilo de la página: secciones que alternan verde (#4a4529, texto crema) y beige (#f7f2e9, texto verde).

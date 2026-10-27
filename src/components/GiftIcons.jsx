@@ -20,16 +20,6 @@ export const MapIcon = icon(<>
     <circle cx="12" cy="38" r="2.5" fill={sage} />
 </>);
 
-export const PastaWineIcon = icon(<>
-    <path d="M4 38h36c0 11-7 18-18 18S4 49 4 38Z" fill={paper} />
-    <path d="M14 56h16" />
-    <path d="M8 38c1-9 9-9 10 0M15 38c1-12 11-12 12 0M24 38c1-8 9-8 10 0" />
-    <path d="M30 30L44 10M41 8l-2.5 4.5M44 10l-2.5 4.5M47 12l-2.5 4.5" />
-    <path d="M42 22h17c0 12-3 19-8.5 19S42 34 42 22Z" fill={paper} />
-    <path d="M43 29c4-2 7 2 15 0c-1 8-3.5 12-7.5 12S44 37 43 29Z" fill={sage} />
-    <path d="M50.5 41v15M44 57h13" />
-</>);
-
 export const PlaneIcon = icon(<>
     <path d="M4 54q14-8 28-4t28-6" strokeDasharray="1.5 5" />
     <path d="M8 30l6-2l6 5l11-3l-9-16l5-2l15 14l10-3c4-1 6 3 2 5L18 40Z" fill={paper} />
@@ -44,14 +34,6 @@ export const BedIcon = icon(<>
     <path d="M8 50h48" />
     <path d="M44 8a7 7 0 1 0 6 11a6 6 0 0 1-6-11Z" fill={sage} />
     <path d="M32 12v3M30.5 13.5h3M56 22v3M54.5 23.5h3" />
-</>);
-
-export const TrainIcon = icon(<>
-    <path d="M18 10h28a6 6 0 0 1 6 6v28a6 6 0 0 1-6 6H18a6 6 0 0 1-6-6V16a6 6 0 0 1 6-6Z" fill={paper} />
-    <path d="M17 18h30v12H17Z" fill={sage} />
-    <path d="M12 36h40" />
-    <circle cx="21" cy="43" r="2.5" /><circle cx="43" cy="43" r="2.5" />
-    <path d="M26 6h12M22 50l-6 8M42 50l6 8M18 55h28" />
 </>);
 
 export const HouseIcon = icon(<>

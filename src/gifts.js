@@ -3,9 +3,7 @@
 // ⚠️ No cambiar un `id` ya publicado: es el que usa apps-script/Code.gs (REGALOS) y los aportes guardados en la hoja.
 export const gifts = [
     { id: 'tiquetes', title: 'Los tiquetes de avión', text: 'Para despegar juntos rumbo a nuestro honeymoon.', goal: 60, cta: 'Les pago el avión' },
-    { id: 'hotel', title: 'Las noches de hotel', text: 'Una cama con vista, donde sea que nos agarre la noche.', goal: 40, cta: 'Una noche va por mí' },
-    { id: 'tren', title: 'Los viajes en tren', text: 'De ciudad en ciudad, mirando el paisaje por la ventana.', goal: 25, cta: 'Compro el tiquete' },
-    { id: 'pasta-y-vino', title: 'Una cena romántica', text: 'Una noche especial para brindar por cada uno de ustedes.', goal: 30, cta: 'Esta cena va por mí' },
+    { id: 'hotel', title: 'Las noches de hotel y excursiones', text: 'Una cama con vista, donde sea que nos agarre la noche.', goal: 40, cta: 'Una noche va por mí' },
     { id: 'luna-de-miel', title: 'Las excursiones', text: 'Tours, museos y cada rincón que nos haga suspirar.', goal: 30, cta: 'Les pago la entrada' },
     { id: 'nuestro-hogar', title: 'Nuestro primer hogar', text: 'Para la cuota inicial del lugar donde empieza todo.', goal: 50, cta: 'Pongo un ladrillo' },
 ];
