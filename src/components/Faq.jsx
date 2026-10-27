@@ -25,7 +25,7 @@ const questions = [
     },
     {
         question: "¿Puedo llevar niños?",
-        answer: "Aunque adoramos a sus pequeños, esta será una celebración solo para adultos. Los bebés de brazos (0 a 1 año) sí son bienvenidos.",
+        answer: "Aunque adoramos a sus pequeños, esta será una celebración solo para adultos. Los bebés de brazos (0 a 1 año) son bienvenidos.",
     },
     {
         question: "¿Cuál es el código de vestimenta?",
