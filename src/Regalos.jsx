@@ -4,7 +4,7 @@ import { Heart, Check, Copy, ArrowLeft, Loader2 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import { volver } from './volver';
 import SectionWrapper from './components/SectionWrapper';
-import { PastaWineIcon, PlaneIcon, BedIcon, TrainIcon, HouseIcon, MapIcon, CarIcon, ChampagneIcon, SpaIcon, BankIcon, GlobeIcon } from './components/GiftIcons';
+import { PastaWineIcon, PlaneIcon, BedIcon, TrainIcon, HouseIcon, MapIcon, BankIcon, GlobeIcon } from './components/GiftIcons';
 import { gifts, bankAccounts } from './gifts';
 import { useInvitado, RSVP_API } from './useInvitado';
 
@@ -14,9 +14,6 @@ const icons = {
     'tren': TrainIcon,
     'luna-de-miel': MapIcon,
     'pasta-y-vino': PastaWineIcon,
-    'carro': CarIcon,
-    'brindis': ChampagneIcon,
-    'spa': SpaIcon,
     'nuestro-hogar': HouseIcon,
 };
 const bankIcons = { colombia: BankIcon, usa: GlobeIcon };
