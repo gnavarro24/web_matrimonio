@@ -42,7 +42,7 @@ const VideoHero = ({ videoShouldPlay = false }) => {
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: 0.8, duration: 1 }}
-                    className="text-[2.5rem] leading-[1.1] font-anastasia overflow-visible pr-2 drop-shadow-lg"
+                    className="text-[2.25rem] sm:text-[2.5rem] leading-[1.1] font-anastasia overflow-visible pr-2 drop-shadow-lg"
                 >
                     Love has a date
                 </motion.p>
