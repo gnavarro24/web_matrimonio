@@ -41,6 +41,7 @@ export function cargar(lista) {
         celdas,
         respuestas,
         get: (i) => JSON.parse(vm.runInContext('doGet', ctx)({ parameter: { codigo: i } })),
+        regalos: () => JSON.parse(vm.runInContext('doGet', ctx)({ parameter: { regalos: '1' } })),
         post: (body) => JSON.parse(vm.runInContext('doPost', ctx)({ postData: { contents: typeof body === 'string' ? body : JSON.stringify(body) } })),
         generarEnlaces: () => vm.runInContext('generarEnlaces', ctx)(),
     };
@@ -102,6 +103,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     assert.equal(s.respuestas[1][8], 'Un día de spa', 'no se puede cambiar de plan');
     s.post({ codigo: 'ABC234', asiste: 'no' });
     assert.equal(s.get('ABC234').regalo, 'spa', 'cambiar la respuesta no borra el regalo');
+    assert.deepEqual(s.regalos(), { ok: true, counts: { spa: 1 } }, 'el contador sale de la hoja');
 
     // Enlaces: conserva los códigos existentes, crea los que faltan y escribe el mensaje solo en invitaciones
     s.generarEnlaces();
@@ -119,6 +121,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     assert.equal(s.post({ codigo: nuevo, regalo: 'tren' }).regalo, 'tren');
     assert.deepEqual(s.respuestas.at(-1), [nuevo, 'Sin código aún', 2, '', '', '', '', '', 'Los viajes en tren']);
     assert.equal(s.post({ codigo: nuevo, asiste: 'si', asistentes: 2 }).regalo, 'tren', 'confirmar después conserva el regalo');
+    assert.deepEqual(s.regalos().counts, { spa: 1, tren: 1 });
     s.generarEnlaces();
     assert.equal(s.celdas[4][5], nuevo, 'volver a ejecutarlo no cambia códigos');
 

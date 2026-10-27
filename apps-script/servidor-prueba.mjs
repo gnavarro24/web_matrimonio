@@ -17,7 +17,8 @@ const s = cargar([
 http.createServer((req, res) => {
     let body = '';
     req.on('data', (c) => (body += c)).on('end', () => {
-        const out = req.method === 'POST' ? s.post(body) : s.get(new URL(req.url, 'http://x').searchParams.get('codigo'));
+        const q = new URL(req.url, 'http://x').searchParams;
+        const out = req.method === 'POST' ? s.post(body) : q.get('regalos') ? s.regalos() : s.get(q.get('codigo'));
         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' }).end(JSON.stringify(out));
         if (req.method === 'POST') console.table(s.respuestas.slice(1).map(([codigo, nombre, cupos, asiste, asistentes, mensaje, , alergias]) => ({ codigo, nombre, cupos, asiste, asistentes, mensaje, alergias })));
     });

@@ -11,22 +11,21 @@ const btn = "w-full px-3 py-4 border border-dusty-olive uppercase tracking-[0.12
 const Confirmacion = ({ invitado }) => {
     const { code, guest, setGuest, status, reload } = invitado;
     const [editing, setEditing] = useState(false);
-    const [form, setForm] = useState({ alergias: '', mensaje: '' });
+    const [form, setForm] = useState({ asistentes: 1, alergias: '', mensaje: '' });
     const [sending, setSending] = useState(''); // 'si' | 'no': qué botón se está enviando
     const [submitError, setSubmitError] = useState('');
 
-    // Al cargar la invitación, proponer lo ya respondido
+    // Al cargar la invitación, proponer lo ya respondido (o todos los cupos)
     useEffect(() => {
-        if (guest) setForm((f) => ({ ...f, alergias: guest.alergias || f.alergias }));
+        if (guest) setForm((f) => ({ ...f, asistentes: guest.asistentes || guest.cupos, alergias: guest.alergias || f.alergias }));
     }, [guest]);
 
     const respond = async (asiste) => {
         setSending(asiste);
         setSubmitError('');
         try {
-            // No se pregunta cuántos van (2026-10-25): confirmar es por todos los cupos de la invitación.
             // Sin cabecera Content-Type: así el navegador no hace preflight, que Apps Script no responde.
-            const res = await fetch(RSVP_API, { method: 'POST', body: JSON.stringify({ codigo: code, asiste, asistentes: guest.cupos, ...form }) });
+            const res = await fetch(RSVP_API, { method: 'POST', body: JSON.stringify({ codigo: code, asiste, ...form }) });
             const data = await res.json();
             if (!data.ok) throw new Error(data.error);
             setGuest(data);
@@ -101,7 +100,7 @@ const Confirmacion = ({ invitado }) => {
                             </div>
                             <p className="text-2xl font-cormorant text-black/80">
                                 {guest.asiste === 'si'
-                                    ? '¡Gracias por confirmar! Nos vemos el 20 de marzo.'
+                                    ? `¡Gracias! Confirmaste ${guest.asistentes} ${guest.asistentes === 1 ? 'asistente' : 'asistentes'}. Nos vemos el 20 de marzo.`
                                     : 'Gracias por avisarnos. Los llevaremos en el corazón ese día.'}
                             </p>
                             <button type="button" onClick={() => setEditing(true)} className="mt-6 text-dusty-olive underline underline-offset-4 font-cormorant text-xl">
@@ -112,6 +111,29 @@ const Confirmacion = ({ invitado }) => {
 
                     {guest && !answered && (
                         <form onSubmit={(e) => { e.preventDefault(); respond('si'); }} className="space-y-8">
+                            {guest.cupos > 1 && (
+                                <fieldset>
+                                    <legend className={`${label} mx-auto`}>¿Cuántos asistirán?</legend>
+                                    <div className="flex flex-wrap justify-center gap-3">
+                                        {Array.from({ length: guest.cupos }, (_, n) => n + 1).map((n) => (
+                                            <label key={n} className="cursor-pointer">
+                                                <input
+                                                    type="radio"
+                                                    name="asistentes"
+                                                    value={n}
+                                                    checked={form.asistentes === n}
+                                                    onChange={() => setForm({ ...form, asistentes: n })}
+                                                    className="peer sr-only"
+                                                />
+                                                <span className="flex w-12 h-12 items-center justify-center rounded-full border border-dusty-olive text-xl font-cormorant text-dusty-olive transition-colors peer-checked:bg-dusty-olive peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-dusty-olive peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-[#f7f2e9]">
+                                                    {n}
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </fieldset>
+                            )}
+
                             <div className="text-left">
                                 <label htmlFor="rsvp-alergias" className={label}>Alergias o restricciones alimentarias (opcional)</label>
                                 <textarea

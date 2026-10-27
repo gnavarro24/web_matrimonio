@@ -8,7 +8,6 @@ import { PastaWineIcon, PlaneIcon, BedIcon, TrainIcon, HouseIcon, MapIcon, CarIc
 import { gifts, bankAccounts } from './gifts';
 import { useInvitado, RSVP_API } from './useInvitado';
 
-const API = '/api/regalos';
 const icons = {
     'tiquetes': PlaneIcon,
     'hotel': BedIcon,
@@ -67,15 +66,17 @@ function Regalos() {
     const [error, setError] = useState('');
     const [copied, setCopied] = useState(null); // fila recién copiada
 
-    // ponytail: "tiempo real" por polling cada 4 s con la pestaña visible; WebSocket en el
-    // Durable Object si algún día hace falta que sea instantáneo.
+    // Los aportes se cuentan en la hoja (una invitación = un aporte), así el número coincide con lo guardado.
+    // ponytail: "tiempo real" por polling cada 8 s con la pestaña visible; Google tarda ~1 s por consulta.
     useEffect(() => {
         const load = () => {
             if (document.hidden || guardando.current) return;
-            fetch(API).then((r) => r.json()).then((d) => setCounts(d.counts)).catch(() => {});
+            fetch(`${RSVP_API}?regalos=1`).then((r) => r.json())
+                .then((d) => { if (d.ok && !guardando.current) setCounts(d.counts); })
+                .catch(() => {});
         };
         load();
-        const timer = setInterval(load, 4000);
+        const timer = setInterval(load, 8000);
         document.addEventListener('visibilitychange', load);
         return () => {
             clearInterval(timer);
@@ -104,8 +105,6 @@ function Regalos() {
             } else {
                 if (!data.ok) throw new Error(data.error);
                 setGuest(data);
-                // El contador es solo para la barra: si falla, la elección ya quedó guardada en la hoja.
-                await fetch(API, { method: 'POST', body: JSON.stringify({ id }) }).then((r) => r.json()).then((d) => setCounts(d.counts)).catch(() => {});
             }
         } catch {
             setGuest(antes);

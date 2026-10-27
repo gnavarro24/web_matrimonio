@@ -123,8 +123,19 @@ function texto_(valor) {
 }
 
 // GET ?codigo=CODIGO → datos del invitado (y su respuesta, si ya confirmó).
+// GET ?regalos=1 → cuántas invitaciones eligieron cada plan: { ok, counts: { spa: 2, … } }.
 function doGet(e) {
+  if (e.parameter.regalos) return json_({ ok: true, counts: contarRegalos_() });
   return json_(invitado_(e.parameter.codigo) || { ok: false, error: 'codigo' });
+}
+
+function contarRegalos_() {
+  const counts = {};
+  filas_(respuestas_(), COL_REGALO).forEach(function (f) {
+    const id = idRegalo_(f[COL_REGALO - 1]);
+    if (id) counts[id] = (counts[id] || 0) + 1;
+  });
+  return counts;
 }
 
 // POST { codigo, asiste: 'si' | 'no', asistentes, mensaje, alergias } → guarda la respuesta en la fila de la invitación.
