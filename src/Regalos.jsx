@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Heart, Check, Copy, ArrowLeft } from 'lucide-react';
+import { Heart, Check, Copy, ArrowLeft, Loader2 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import { volver } from './volver';
 import SectionWrapper from './components/SectionWrapper';
@@ -62,6 +62,7 @@ function Regalos() {
     const elegido = guest?.regalo || '';
     const [counts, setCounts] = useState({});
     const [sending, setSending] = useState(null);
+    const guardando = useRef(false); // mientras se guarda, el polling no pisa el +1 que ya se ve
     const [burst, setBurst] = useState(null); // regalo cuyo corazón está volando
     const [error, setError] = useState('');
     const [copied, setCopied] = useState(null); // fila recién copiada
@@ -70,7 +71,7 @@ function Regalos() {
     // Durable Object si algún día hace falta que sea instantáneo.
     useEffect(() => {
         const load = () => {
-            if (document.hidden) return;
+            if (document.hidden || guardando.current) return;
             fetch(API).then((r) => r.json()).then((d) => setCounts(d.counts)).catch(() => {});
         };
         load();
@@ -87,21 +88,31 @@ function Regalos() {
         if (!guest) {
             return setError(status === 'loading' ? 'Un momento, estamos cargando tu invitación…' : 'Para elegir tu plan, abre el enlace personal de tu invitación.');
         }
+        // Se ve al instante (la hoja tarda unos segundos en responder); si no se guarda, se deshace.
+        const antes = guest;
+        const sumar = (n) => setCounts((c) => ({ ...c, [id]: Math.max(0, (c[id] || 0) + n) }));
+        setGuest({ ...guest, regalo: id });
+        sumar(1);
+        setBurst(id);
         setSending(id);
+        guardando.current = true;
         try {
             const data = await (await fetch(RSVP_API, { method: 'POST', body: JSON.stringify({ codigo: code, regalo: id }) })).json();
             if (data.error === 'ya-eligio') {
-                setGuest({ ...guest, regalo: data.regalo });
+                setGuest({ ...antes, regalo: data.regalo }); // ya había elegido desde otro celular
+                sumar(-1);
             } else {
                 if (!data.ok) throw new Error(data.error);
                 setGuest(data);
-                setBurst(id);
                 // El contador es solo para la barra: si falla, la elección ya quedó guardada en la hoja.
-                fetch(API, { method: 'POST', body: JSON.stringify({ id }) }).then((r) => r.json()).then((d) => setCounts(d.counts)).catch(() => {});
+                await fetch(API, { method: 'POST', body: JSON.stringify({ id }) }).then((r) => r.json()).then((d) => setCounts(d.counts)).catch(() => {});
             }
         } catch {
+            setGuest(antes);
+            sumar(-1);
             setError('No pudimos guardar tu elección. Intenta de nuevo en un momento.');
         }
+        guardando.current = false;
         setSending(null);
     };
 
@@ -148,7 +159,7 @@ function Regalos() {
             <SectionWrapper className={`py-12 md:py-16 ${ink}`}>
                 <p className="max-w-2xl mx-auto mb-8 text-center text-xl font-cormorant italic font-medium">
                     {elegido
-                        ? <>Tu plan elegido: <strong className="not-italic font-semibold">{gifts.find((g) => g.id === elegido)?.title}</strong>. ¡Gracias!</>
+                        ? <>Elegiste: <strong className="not-italic font-semibold">{gifts.find((g) => g.id === elegido)?.title}</strong>. ¡Gracias!</>
                         : 'Cada invitación puede elegir un solo plan.'}
                 </p>
                 <p role="alert" className="mb-6 text-center text-lg font-cormorant text-red-700 empty:hidden">{error}</p>
@@ -158,7 +169,7 @@ function Regalos() {
                         const count = counts[id] || 0;
                         const percent = Math.min(100, Math.round((count / goal) * 100));
                         return (
-                            <div key={id} className="group relative bg-porcelain border border-dry-sage px-7 pt-[38px] pb-[30px] text-center flex flex-col items-center gap-3 shadow-[0_10px_24px_rgba(74,69,41,0.10)] transition duration-300 odd:-rotate-[1.2deg] even:rotate-[1.1deg] hover:rotate-0 hover:-translate-y-1.5 hover:shadow-[0_18px_34px_rgba(74,69,41,0.16)]">
+                            <div key={id} className={`group relative bg-porcelain border ${elegido === id ? 'border-dusty-olive ring-2 ring-dusty-olive' : 'border-dry-sage'} px-7 pt-[38px] pb-[30px] text-center flex flex-col items-center gap-3 shadow-[0_10px_24px_rgba(74,69,41,0.10)] transition duration-300 odd:-rotate-[1.2deg] even:rotate-[1.1deg] hover:rotate-0 hover:-translate-y-1.5 hover:shadow-[0_18px_34px_rgba(74,69,41,0.16)]`}>
                                 <span aria-hidden="true" className="absolute inset-2 border border-dashed border-dry-sage pointer-events-none" />
                                 {percent >= 100 && (
                                     <span className="absolute -top-4 -right-2.5 w-[86px] h-[86px] rounded-full bg-dusty-olive text-porcelain flex items-center justify-center rotate-12 font-sans text-[11px] font-bold uppercase tracking-[0.12em] leading-tight shadow-[0_6px_12px_rgba(74,69,41,0.25)]">
@@ -169,7 +180,7 @@ function Regalos() {
                                     <span aria-hidden="true" className="absolute inset-1.5 bg-[#e4e7d4]" style={{ borderRadius: blobs[i % blobs.length] }} />
                                     {Icon && <Icon className="relative w-[92px] h-[92px] transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105" />}
                                 </span>
-                                <p className={`${kicker} text-[11px] tracking-[0.24em]`}>Plan n.º {i + 1}</p>
+                                <p className={`${kicker} text-[11px] tracking-[0.24em]`}>{elegido === id ? '♥ Tu elección' : `Plan n.º ${i + 1}`}</p>
                                 <h2 className="text-3xl leading-[1.1] font-cormorant font-semibold">{title}</h2>
                                 <p className="mb-2 text-xl leading-snug font-cormorant italic font-medium">{text}</p>
 
@@ -191,7 +202,11 @@ function Regalos() {
                                     </p>
 
                                     {elegido === id ? (
-                                        <p className="min-h-[52px] flex items-center justify-center bg-dusty-olive text-porcelain font-anastasia text-3xl leading-none">¡Mil gracias!</p>
+                                        <p className="min-h-[52px] flex items-center justify-center gap-2 bg-dusty-olive text-porcelain font-anastasia text-3xl leading-none" aria-live="polite">
+                                            {sending === id
+                                                ? <><Loader2 size={18} className="animate-spin" /><span className="font-sans text-[13px] font-bold uppercase tracking-[0.2em]">Guardando…</span></>
+                                                : '¡Mil gracias!'}
+                                        </p>
                                     ) : (
                                         <button
                                             type="button"
