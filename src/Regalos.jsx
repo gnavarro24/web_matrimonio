@@ -4,16 +4,14 @@ import { Heart, Check, Copy, ArrowLeft, Loader2 } from 'lucide-react';
 import Navbar from './components/Navbar';
 import { volver } from './volver';
 import SectionWrapper from './components/SectionWrapper';
-import { PastaWineIcon, PlaneIcon, BedIcon, TrainIcon, HouseIcon, MapIcon, BankIcon, GlobeIcon } from './components/GiftIcons';
+import { PlaneIcon, BedIcon, HouseIcon, MapIcon, BankIcon, GlobeIcon } from './components/GiftIcons';
 import { gifts, bankAccounts } from './gifts';
 import { useInvitado, RSVP_API } from './useInvitado';
 
 const icons = {
     'tiquetes': PlaneIcon,
     'hotel': BedIcon,
-    'tren': TrainIcon,
     'luna-de-miel': MapIcon,
-    'pasta-y-vino': PastaWineIcon,
     'nuestro-hogar': HouseIcon,
 };
 const bankIcons = { colombia: BankIcon, usa: GlobeIcon };
@@ -22,9 +20,10 @@ const blobs = ['58% 42% 55% 45% / 48% 56% 44% 52%', '45% 55% 42% 58% / 56% 46% 5
 
 const navLinks = [
     { title: "Invitación", href: "/" },
+    { title: "RSVP", href: "/#rsvp" },
     { title: "Detalles", href: "/details" },
     { title: "Regalos", href: "#top" },
-    { title: "RSVP", href: "/#rsvp" },
+    { title: "Nuestra historia", href: "/historia" },
 ];
 
 const btn = "inline-block px-8 py-4 border border-dusty-olive tracking-widest uppercase text-sm transition-all duration-300";
@@ -242,7 +241,7 @@ function Regalos() {
                     })}
                 </div>
                 <p className="max-w-2xl mx-auto mt-11 text-center text-[19px] leading-normal font-cormorant italic font-medium">
-                    Los aportes de esta página son simbólicos: aquí no se mueve dinero. Si quieres hacer tu aporte al Honeymoon fund, puedes usar los datos bancarios de abajo o entregarlo el día de la boda.
+                    Los aportes de esta página son simbólicos: aquí no se mueve dinero. Si quieres hacer tu aporte al Honeymoon fund, puedes usar los datos bancarios de abajo o lluvia de sobres el día de la boda.
                 </p>
             </SectionWrapper>
 

@@ -14,7 +14,7 @@
  *   A Código | B Nombre | C Cupos | D Asiste | E Asistentes | F Mensaje | G Respondió | H Alergias | I Regalo
  *
  * I son los planes del Honeymoon fund que eligió la invitación, separados por coma y sin repetir
- * (p. ej. "Las noches de hotel, Una cena romántica"); cada plan suma un aporte en la web.
+ * (p. ej. "Las noches de hotel y excursiones, Nuestro primer hogar"); cada plan suma un aporte en la web.
  *
  * El enlace de cada invitado solo lleva su código:  https://thenavelas.website/?i=ABC234
  * El nombre y los cupos no viajan en la URL: la web los pide aquí con el código,
@@ -37,18 +37,18 @@ const COL_REGALO = 9;
 // Planes del Honeymoon fund: mismo `id` que src/gifts.js; en la hoja se escribe el título.
 const REGALOS = {
   'tiquetes': 'Los tiquetes de avión',
-  'hotel': 'Las noches de hotel',
-  'tren': 'Los viajes en tren',
-  'pasta-y-vino': 'Una cena romántica',
+  'hotel': 'Las noches de hotel y excursiones',
   'luna-de-miel': 'Las excursiones',
   'nuestro-hogar': 'Nuestro primer hogar',
 };
-// Celda de la hoja ("Las noches de hotel, Una cena romántica") → ids de los planes, sin repetir.
+// Títulos viejos que pueden seguir escritos en la hoja.
+const ANTES = { 'Las noches de hotel': 'hotel' };
+// Celda de la hoja ("Las noches de hotel y excursiones, Nuestro primer hogar") → ids de los planes, sin repetir.
 function idsRegalos_(celda) {
   const ids = [];
   String(celda || '').split(',').forEach(function (parte) {
     const t = parte.trim();
-    const id = Object.keys(REGALOS).filter(function (k) { return REGALOS[k] === t || k === t; })[0];
+    const id = Object.keys(REGALOS).filter(function (k) { return REGALOS[k] === t || k === t || ANTES[t] === k; })[0];
     if (id && ids.indexOf(id) < 0) ids.push(id);
   });
   return ids;
