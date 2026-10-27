@@ -7,9 +7,6 @@ export const gifts = [
     { id: 'tren', title: 'Los viajes en tren', text: 'De ciudad en ciudad, mirando el paisaje por la ventana.', goal: 25, cta: 'Compro el tiquete' },
     { id: 'pasta-y-vino', title: 'Una cena romántica', text: 'Una noche especial para brindar por cada uno de ustedes.', goal: 30, cta: 'Esta cena va por mí' },
     { id: 'luna-de-miel', title: 'Las excursiones', text: 'Tours, museos y cada rincón que nos haga suspirar.', goal: 30, cta: 'Les pago la entrada' },
-    { id: 'carro', title: 'El carro para recorrer', text: 'Para perdernos, a propósito, por carreteras nuevas.', goal: 25, cta: 'Pongo la gasolina' },
-    { id: 'brindis', title: 'Un brindis al atardecer', text: 'Dos copas, una vista bonita y nada de afanes.', goal: 30, cta: 'Invito el brindis' },
-    { id: 'spa', title: 'Un día de spa', text: 'Para descansar de los preparativos de la boda.', goal: 25, cta: 'Les regalo el spa' },
     { id: 'nuestro-hogar', title: 'Nuestro primer hogar', text: 'Para la cuota inicial del lugar donde empieza todo.', goal: 50, cta: 'Pongo un ladrillo' },
 ];
 

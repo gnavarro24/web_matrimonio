@@ -99,20 +99,20 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     // Honeymoon fund: varios planes por invitación, sin repetir, y responder después no los borra
     assert.equal(s.post({ codigo: 'ABC234', regalo: 'yate' }).error, 'regalo');
     assert.equal(s.post({ codigo: 'ABC234', regalo: 'constructor' }).error, 'regalo', 'no acepta propiedades heredadas');
-    assert.equal(s.post({ codigo: 'NOEXISTE', regalo: 'spa' }).error, 'codigo');
-    assert.deepEqual(s.post({ codigo: 'abc234', regalo: 'spa' }).regalos, ['spa']);
-    assert.equal(s.respuestas[1][8], 'Un día de spa', 'en la hoja queda el título');
-    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'hotel' }).regalos, ['spa', 'hotel']);
-    assert.equal(s.respuestas[1][8], 'Un día de spa, Las noches de hotel');
-    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'spa' }).regalos, ['spa', 'hotel'], 'repetir un plan no lo duplica');
-    assert.equal(s.respuestas[1][8], 'Un día de spa, Las noches de hotel');
-    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'tren', quitar: true }).regalos, ['spa', 'hotel'], 'quitar uno que no tenía no cambia nada');
-    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'spa', quitar: true }).regalos, ['hotel']);
+    assert.equal(s.post({ codigo: 'NOEXISTE', regalo: 'pasta-y-vino' }).error, 'codigo');
+    assert.deepEqual(s.post({ codigo: 'abc234', regalo: 'pasta-y-vino' }).regalos, ['pasta-y-vino']);
+    assert.equal(s.respuestas[1][8], 'Una cena romántica', 'en la hoja queda el título');
+    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'hotel' }).regalos, ['pasta-y-vino', 'hotel']);
+    assert.equal(s.respuestas[1][8], 'Una cena romántica, Las noches de hotel');
+    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'pasta-y-vino' }).regalos, ['pasta-y-vino', 'hotel'], 'repetir un plan no lo duplica');
+    assert.equal(s.respuestas[1][8], 'Una cena romántica, Las noches de hotel');
+    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'tren', quitar: true }).regalos, ['pasta-y-vino', 'hotel'], 'quitar uno que no tenía no cambia nada');
+    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'pasta-y-vino', quitar: true }).regalos, ['hotel']);
     assert.equal(s.respuestas[1][8], 'Las noches de hotel');
-    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'spa' }).regalos, ['hotel', 'spa'], 'se puede volver a elegir');
+    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'pasta-y-vino' }).regalos, ['hotel', 'pasta-y-vino'], 'se puede volver a elegir');
     s.post({ codigo: 'ABC234', asiste: 'no' });
-    assert.deepEqual(s.get('ABC234').regalos, ['hotel', 'spa'], 'cambiar la respuesta no borra los regalos');
-    assert.deepEqual(s.regalos(), { ok: true, counts: { hotel: 1, spa: 1 } }, 'el contador sale de la hoja');
+    assert.deepEqual(s.get('ABC234').regalos, ['hotel', 'pasta-y-vino'], 'cambiar la respuesta no borra los regalos');
+    assert.deepEqual(s.regalos(), { ok: true, counts: { hotel: 1, 'pasta-y-vino': 1 } }, 'el contador sale de la hoja');
 
     // Enlaces: conserva los códigos existentes, crea los que faltan y escribe el mensaje solo en invitaciones
     s.generarEnlaces();
@@ -130,7 +130,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     assert.deepEqual(s.post({ codigo: nuevo, regalo: 'tren' }).regalos, ['tren']);
     assert.deepEqual(s.respuestas.at(-1), [nuevo, 'Sin código aún', 2, '', '', '', '', '', 'Los viajes en tren']);
     assert.deepEqual(s.post({ codigo: nuevo, asiste: 'si', asistentes: 2 }).regalos, ['tren'], 'confirmar después conserva el regalo');
-    assert.deepEqual(s.regalos().counts, { spa: 1, hotel: 1, tren: 1 });
+    assert.deepEqual(s.regalos().counts, { 'pasta-y-vino': 1, hotel: 1, tren: 1 });
     s.generarEnlaces();
     assert.equal(s.celdas[4][5], nuevo, 'volver a ejecutarlo no cambia códigos');
 

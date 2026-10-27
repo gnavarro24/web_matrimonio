@@ -14,7 +14,7 @@
  *   A Código | B Nombre | C Cupos | D Asiste | E Asistentes | F Mensaje | G Respondió | H Alergias | I Regalo
  *
  * I son los planes del Honeymoon fund que eligió la invitación, separados por coma y sin repetir
- * (p. ej. "Las noches de hotel, Un día de spa"); cada plan suma un aporte en la web.
+ * (p. ej. "Las noches de hotel, Una cena romántica"); cada plan suma un aporte en la web.
  *
  * El enlace de cada invitado solo lleva su código:  https://thenavelas.website/?i=ABC234
  * El nombre y los cupos no viajan en la URL: la web los pide aquí con el código,
@@ -41,12 +41,9 @@ const REGALOS = {
   'tren': 'Los viajes en tren',
   'pasta-y-vino': 'Una cena romántica',
   'luna-de-miel': 'Las excursiones',
-  'carro': 'El carro para recorrer',
-  'brindis': 'Un brindis al atardecer',
-  'spa': 'Un día de spa',
   'nuestro-hogar': 'Nuestro primer hogar',
 };
-// Celda de la hoja ("Las noches de hotel, Un día de spa") → ids de los planes, sin repetir.
+// Celda de la hoja ("Las noches de hotel, Una cena romántica") → ids de los planes, sin repetir.
 function idsRegalos_(celda) {
   const ids = [];
   String(celda || '').split(',').forEach(function (parte) {
@@ -147,7 +144,7 @@ function texto_(valor) {
 }
 
 // GET ?codigo=CODIGO → datos del invitado (y su respuesta, si ya confirmó).
-// GET ?regalos=1 → cuántas invitaciones eligieron cada plan: { ok, counts: { spa: 2, … } }.
+// GET ?regalos=1 → cuántas invitaciones eligieron cada plan: { ok, counts: { hotel: 2, … } }.
 function doGet(e) {
   if (e.parameter.regalos) return json_({ ok: true, counts: contarRegalos_() });
   return json_(invitado_(e.parameter.codigo) || { ok: false, error: 'codigo' });
