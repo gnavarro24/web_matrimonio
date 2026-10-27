@@ -1,6 +1,6 @@
 // Honeymoon fund: en qué usaremos los regalos. Editable.
 // `goal` = número de aportes simbólicos para llenar la barra (no es dinero real). `cta` = texto del botón de aportar.
-// ⚠️ No cambiar un `id` ya publicado: el contador guardado quedaría huérfano.
+// ⚠️ No cambiar un `id` ya publicado: es el que usa apps-script/Code.gs (REGALOS) y los aportes guardados en la hoja.
 export const gifts = [
     { id: 'tiquetes', title: 'Los tiquetes de avión', text: 'Para despegar juntos rumbo a nuestro honeymoon.', goal: 60, cta: 'Les pago el avión' },
     { id: 'hotel', title: 'Las noches de hotel', text: 'Una cama con vista, donde sea que nos agarre la noche.', goal: 40, cta: 'Una noche va por mí' },
