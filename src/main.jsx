@@ -5,6 +5,7 @@ import ScrollProgress from './components/ScrollProgress.jsx'
 import SimpleAudioTest from './components/SimpleAudioTest.jsx'
 import standByMeAudio from './assets/decor/stand-by-me.m4a'
 import { ruta } from './navegacion.js'
+import { precargar } from './useInvitado.js'
 import './index.css'
 
 // ponytail: switch por pathname, son 5 páginas estáticas; react-router si aparecen rutas dinámicas.
@@ -25,6 +26,7 @@ if (!paginas[ruta()]) {
     history.replaceState(null, '', (paginas[sinPrefijo] ? sinPrefijo : '/') + window.location.search + window.location.hash);
 }
 const inicial = ruta();
+if (inicial !== '/save-the-date') precargar(); // el nombre del invitado se pide ya, mientras baja el resto
 
 // Vuelve a la posición guardada (atrás) o arriba (página nueva). La página llega diferida: esperar a que mida.
 const ubicar = () => {

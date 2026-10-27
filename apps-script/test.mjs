@@ -21,6 +21,7 @@ export function cargar(lista) {
     const celdas = [['Wedding Guest Name(s)', 'Family Name', 'Invite sent', '# of guests', 'Mensaje'], ...lista];
     const respuestas = []; // la pestaña Invitacion empieza vacía, como en la hoja real
     const libros = { Lista: hojaFalsa(celdas), Respuestas: hojaFalsa(respuestas) };
+    const cache = new Map(); // CacheService de Apps Script
     const ctx = vm.createContext({
         SpreadsheetApp: {
             openById: (id) => ({
@@ -33,6 +34,7 @@ export function cargar(lista) {
             // Como Apps Script: bytes con signo (-128..127)
             computeDigest: (alg, texto) => [...createHash(alg).update(texto, 'utf8').digest()].map((b) => (b > 127 ? b - 256 : b)),
         },
+        CacheService: { getScriptCache: () => ({ get: (k) => cache.get(k) ?? null, put: (k, v) => cache.set(k, v), remove: (k) => cache.delete(k) }) },
         ContentService: { MimeType: { JSON: 'json' }, createTextOutput: (t) => ({ setMimeType: () => t }) },
         LockService: { getScriptLock: () => ({ waitLock() {}, releaseLock() {} }) },
     });
@@ -40,6 +42,7 @@ export function cargar(lista) {
     return {
         celdas,
         respuestas,
+        cache,
         get: (i) => JSON.parse(vm.runInContext('doGet', ctx)({ parameter: { codigo: i } })),
         regalos: () => JSON.parse(vm.runInContext('doGet', ctx)({ parameter: { regalos: '1' } })),
         post: (body) => JSON.parse(vm.runInContext('doPost', ctx)({ postData: { contents: typeof body === 'string' ? body : JSON.stringify(body) } })),
@@ -58,7 +61,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     ]);
 
     // Consulta: el nombre y los cupos salen de la lista, no de la URL
-    assert.deepEqual(s.get('abc234 '), { ok: true, nombre: 'Flia Pérez', cupos: 3, asiste: '', asistentes: 0, alergias: '', regalo: '' });
+    assert.deepEqual(s.get('abc234 '), { ok: true, nombre: 'Flia Pérez', cupos: 3, asiste: '', asistentes: 0, alergias: '', regalos: [] });
     assert.deepEqual(s.get('NOEXISTE'), { ok: false, error: 'codigo' });
     assert.deepEqual(s.get(''), { ok: false, error: 'codigo' }); // no debe coincidir con filas sin código
     assert.deepEqual(s.get(undefined), { ok: false, error: 'codigo' });
@@ -76,7 +79,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 
     // Confirmar crea la fila en Invitacion; cambiar la respuesta la sobrescribe
     assert.deepEqual(s.post({ codigo: 'abc234', asiste: 'si', asistentes: 3, mensaje: '=HYPERLINK("http://x")', alergias: '=Maní' }),
-        { ok: true, nombre: 'Flia Pérez', cupos: 3, asiste: 'si', asistentes: 3, alergias: "'=Maní", regalo: '' });
+        { ok: true, nombre: 'Flia Pérez', cupos: 3, asiste: 'si', asistentes: 3, alergias: "'=Maní", regalos: [] });
     assert.deepEqual(s.respuestas[0], ['Código', 'Nombre', 'Cupos', 'Asiste', 'Asistentes', 'Mensaje', 'Respondió', 'Alergias', 'Regalo']);
     assert.deepEqual(s.respuestas[1].slice(0, 6), ['ABC234', 'Flia Pérez', 3, 'si', 3, '\'=HYPERLINK("http://x")'], 'el mensaje no puede guardarse como fórmula');
     assert.ok(s.respuestas[1][6] instanceof Date || typeof s.respuestas[1][6] === 'object');
@@ -93,17 +96,19 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     assert.equal(s.respuestas.length, 3);
     assert.deepEqual(s.respuestas[1].slice(3, 5), ['si', 3], 'no toca la fila de otra invitación');
 
-    // Honeymoon fund: un solo plan por invitación, y responder después no lo borra
+    // Honeymoon fund: varios planes por invitación, sin repetir, y responder después no los borra
     assert.equal(s.post({ codigo: 'ABC234', regalo: 'yate' }).error, 'regalo');
     assert.equal(s.post({ codigo: 'ABC234', regalo: 'constructor' }).error, 'regalo', 'no acepta propiedades heredadas');
     assert.equal(s.post({ codigo: 'NOEXISTE', regalo: 'spa' }).error, 'codigo');
-    assert.equal(s.post({ codigo: 'abc234', regalo: 'spa' }).regalo, 'spa');
+    assert.deepEqual(s.post({ codigo: 'abc234', regalo: 'spa' }).regalos, ['spa']);
     assert.equal(s.respuestas[1][8], 'Un día de spa', 'en la hoja queda el título');
-    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'hotel' }), { ok: false, error: 'ya-eligio', regalo: 'spa' });
-    assert.equal(s.respuestas[1][8], 'Un día de spa', 'no se puede cambiar de plan');
+    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'hotel' }).regalos, ['spa', 'hotel']);
+    assert.equal(s.respuestas[1][8], 'Un día de spa, Las noches de hotel');
+    assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'spa' }).regalos, ['spa', 'hotel'], 'repetir un plan no lo duplica');
+    assert.equal(s.respuestas[1][8], 'Un día de spa, Las noches de hotel');
     s.post({ codigo: 'ABC234', asiste: 'no' });
-    assert.equal(s.get('ABC234').regalo, 'spa', 'cambiar la respuesta no borra el regalo');
-    assert.deepEqual(s.regalos(), { ok: true, counts: { spa: 1 } }, 'el contador sale de la hoja');
+    assert.deepEqual(s.get('ABC234').regalos, ['spa', 'hotel'], 'cambiar la respuesta no borra los regalos');
+    assert.deepEqual(s.regalos(), { ok: true, counts: { spa: 1, hotel: 1 } }, 'el contador sale de la hoja');
 
     // Enlaces: conserva los códigos existentes, crea los que faltan y escribe el mensaje solo en invitaciones
     s.generarEnlaces();
@@ -118,12 +123,19 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     assert.notEqual(nuevo, repetido, 'dos invitaciones con el mismo nombre tienen códigos distintos');
     assert.equal(s.get(nuevo).nombre, 'Sin código aún');
     // Elegir regalo antes de confirmar asistencia crea la fila solo con el regalo
-    assert.equal(s.post({ codigo: nuevo, regalo: 'tren' }).regalo, 'tren');
+    assert.deepEqual(s.post({ codigo: nuevo, regalo: 'tren' }).regalos, ['tren']);
     assert.deepEqual(s.respuestas.at(-1), [nuevo, 'Sin código aún', 2, '', '', '', '', '', 'Los viajes en tren']);
-    assert.equal(s.post({ codigo: nuevo, asiste: 'si', asistentes: 2 }).regalo, 'tren', 'confirmar después conserva el regalo');
-    assert.deepEqual(s.regalos().counts, { spa: 1, tren: 1 });
+    assert.deepEqual(s.post({ codigo: nuevo, asiste: 'si', asistentes: 2 }).regalos, ['tren'], 'confirmar después conserva el regalo');
+    assert.deepEqual(s.regalos().counts, { spa: 1, hotel: 1, tren: 1 });
     s.generarEnlaces();
     assert.equal(s.celdas[4][5], nuevo, 'volver a ejecutarlo no cambia códigos');
+
+    // La lista se lee de la caché; cambiar cupos se ve tras ejecutar generarEnlaces (que la borra)
+    assert.equal(s.get('XYZ789').cupos, 1);
+    s.celdas[3][3] = 5;
+    assert.equal(s.get('XYZ789').cupos, 1, 'sin borrar la caché sigue el valor anterior');
+    s.generarEnlaces();
+    assert.equal(s.get('XYZ789').cupos, 5);
 
     // Los códigos son los mismos en cada ejecución desde cero (la vista previa coincide con la hoja)
     const desdeCero = () => { const h = cargar([['Nuevo', 'Sin código aún', '', 2, '', '']]); h.generarEnlaces(); return h.celdas[1][5]; };

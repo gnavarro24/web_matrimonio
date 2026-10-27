@@ -54,11 +54,13 @@ const Route = () => {
     );
 };
 
-// Un solo plan por invitación: la elección queda en la hoja (columna Regalo de "Invitacion", ver apps-script/Code.gs)
-// y además suma en el contador de la página (/api/regalos).
+// Cada invitación puede elegir uno o varios planes (cada uno una sola vez). Quedan en la hoja, columna Regalo
+// de "Invitacion" (ver apps-script/Code.gs), y de ahí sale el contador de aportes.
+const pedirConteo = () => fetch(`${RSVP_API}?regalos=1`).then((r) => r.json());
+
 function Regalos() {
     const { code, guest, setGuest, status } = useInvitado();
-    const elegido = guest?.regalo || '';
+    const elegidos = guest?.regalos || [];
     const [counts, setCounts] = useState({});
     const [sending, setSending] = useState(null);
     const guardando = useRef(false); // mientras se guarda, el polling no pisa el +1 que ya se ve
@@ -71,7 +73,7 @@ function Regalos() {
     useEffect(() => {
         const load = () => {
             if (document.hidden || guardando.current) return;
-            fetch(`${RSVP_API}?regalos=1`).then((r) => r.json())
+            pedirConteo()
                 .then((d) => { if (d.ok && !guardando.current) setCounts(d.counts); })
                 .catch(() => {});
         };
@@ -92,20 +94,17 @@ function Regalos() {
         // Se ve al instante (la hoja tarda unos segundos en responder); si no se guarda, se deshace.
         const antes = guest;
         const sumar = (n) => setCounts((c) => ({ ...c, [id]: Math.max(0, (c[id] || 0) + n) }));
-        setGuest({ ...guest, regalo: id });
+        setGuest({ ...guest, regalos: [...elegidos, id] });
         sumar(1);
         setBurst(id);
-        setSending(id);
+        setSending(id); // mientras tanto los demás botones esperan: dos guardados cruzados se pisarían
         guardando.current = true;
         try {
             const data = await (await fetch(RSVP_API, { method: 'POST', body: JSON.stringify({ codigo: code, regalo: id }) })).json();
-            if (data.error === 'ya-eligio') {
-                setGuest({ ...antes, regalo: data.regalo }); // ya había elegido desde otro celular
-                sumar(-1);
-            } else {
-                if (!data.ok) throw new Error(data.error);
-                setGuest(data);
-            }
+            if (!data.ok) throw new Error(data.error);
+            setGuest(data);
+            // Por si ya lo había elegido desde otro celular: el número exacto sale de la hoja.
+            await pedirConteo().then((d) => d.ok && setCounts(d.counts)).catch(() => {});
         } catch {
             setGuest(antes);
             sumar(-1);
@@ -157,9 +156,9 @@ function Regalos() {
 
             <SectionWrapper className={`py-12 md:py-16 ${ink}`}>
                 <p className="max-w-2xl mx-auto mb-8 text-center text-xl font-cormorant italic font-medium">
-                    {elegido
-                        ? <>Elegiste: <strong className="not-italic font-semibold">{gifts.find((g) => g.id === elegido)?.title}</strong>. ¡Gracias!</>
-                        : 'Cada invitación puede elegir un solo plan.'}
+                    {elegidos.length
+                        ? <>Elegiste: <strong className="not-italic font-semibold">{gifts.filter((g) => elegidos.includes(g.id)).map((g) => g.title).join(', ')}</strong>. ¡Gracias! Puedes sumar los planes que quieras.</>
+                        : 'Elige uno o varios planes.'}
                 </p>
                 <p role="alert" className="mb-6 text-center text-lg font-cormorant text-red-700 empty:hidden">{error}</p>
                 <div className="max-w-[1072px] mx-auto grid gap-x-[30px] gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
@@ -168,7 +167,7 @@ function Regalos() {
                         const count = counts[id] || 0;
                         const percent = Math.min(100, Math.round((count / goal) * 100));
                         return (
-                            <div key={id} className={`group relative bg-porcelain border ${elegido === id ? 'border-dusty-olive ring-2 ring-dusty-olive' : 'border-dry-sage'} px-7 pt-[38px] pb-[30px] text-center flex flex-col items-center gap-3 shadow-[0_10px_24px_rgba(74,69,41,0.10)] transition duration-300 odd:-rotate-[1.2deg] even:rotate-[1.1deg] hover:rotate-0 hover:-translate-y-1.5 hover:shadow-[0_18px_34px_rgba(74,69,41,0.16)]`}>
+                            <div key={id} className={`group relative bg-porcelain border ${elegidos.includes(id) ? 'border-dusty-olive ring-2 ring-dusty-olive' : 'border-dry-sage'} px-7 pt-[38px] pb-[30px] text-center flex flex-col items-center gap-3 shadow-[0_10px_24px_rgba(74,69,41,0.10)] transition duration-300 odd:-rotate-[1.2deg] even:rotate-[1.1deg] hover:rotate-0 hover:-translate-y-1.5 hover:shadow-[0_18px_34px_rgba(74,69,41,0.16)]`}>
                                 <span aria-hidden="true" className="absolute inset-2 border border-dashed border-dry-sage pointer-events-none" />
                                 {percent >= 100 && (
                                     <span className="absolute -top-4 -right-2.5 w-[86px] h-[86px] rounded-full bg-dusty-olive text-porcelain flex items-center justify-center rotate-12 font-sans text-[11px] font-bold uppercase tracking-[0.12em] leading-tight shadow-[0_6px_12px_rgba(74,69,41,0.25)]">
@@ -179,7 +178,7 @@ function Regalos() {
                                     <span aria-hidden="true" className="absolute inset-1.5 bg-[#e4e7d4]" style={{ borderRadius: blobs[i % blobs.length] }} />
                                     {Icon && <Icon className="relative w-[92px] h-[92px] transition-transform duration-300 group-hover:-rotate-6 group-hover:scale-105" />}
                                 </span>
-                                <p className={`${kicker} text-[11px] tracking-[0.24em]`}>{elegido === id ? '♥ Tu elección' : `Plan n.º ${i + 1}`}</p>
+                                <p className={`${kicker} text-[11px] tracking-[0.24em]`}>{elegidos.includes(id) ? '♥ Tu elección' : `Plan n.º ${i + 1}`}</p>
                                 <h2 className="text-3xl leading-[1.1] font-cormorant font-semibold">{title}</h2>
                                 <p className="mb-2 text-xl leading-snug font-cormorant italic font-medium">{text}</p>
 
@@ -200,7 +199,7 @@ function Regalos() {
                                         {percent >= 100 ? `${count} aportes` : `${count} de ${goal} aportes · ${percent}%`}
                                     </p>
 
-                                    {elegido === id ? (
+                                    {elegidos.includes(id) ? (
                                         <p className="min-h-[52px] flex items-center justify-center gap-2 bg-dusty-olive text-porcelain font-anastasia text-3xl leading-none" aria-live="polite">
                                             {sending === id
                                                 ? <><Loader2 size={18} className="animate-spin" /><span className="font-sans text-[13px] font-bold uppercase tracking-[0.2em]">Guardando…</span></>
@@ -210,7 +209,7 @@ function Regalos() {
                                         <button
                                             type="button"
                                             onClick={() => give(id)}
-                                            disabled={!!sending || !!elegido}
+                                            disabled={!!sending}
                                             className="min-h-[52px] w-full px-4 py-3 border border-dusty-olive text-[#586748] font-sans text-[13px] font-bold uppercase tracking-[0.2em] transition duration-300 hover:bg-dusty-olive hover:text-porcelain active:scale-95 disabled:opacity-60 disabled:pointer-events-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#4a4529]"
                                         >
                                             {cta}

@@ -13,7 +13,8 @@
  *
  *   A Código | B Nombre | C Cupos | D Asiste | E Asistentes | F Mensaje | G Respondió | H Alergias | I Regalo
  *
- * I es el plan del Honeymoon fund que eligió la invitación: uno solo, y una vez elegido no se cambia.
+ * I son los planes del Honeymoon fund que eligió la invitación, separados por coma y sin repetir
+ * (p. ej. "Las noches de hotel, Un día de spa"); cada plan suma un aporte en la web.
  *
  * El enlace de cada invitado solo lleva su código:  https://thenavelas.website/?i=ABC234
  * El nombre y los cupos no viajan en la URL: la web los pide aquí con el código,
@@ -45,11 +46,17 @@ const REGALOS = {
   'spa': 'Un día de spa',
   'nuestro-hogar': 'Nuestro primer hogar',
 };
-// Título guardado en la hoja → id del plan ('' si no ha elegido).
-function idRegalo_(titulo) {
-  const t = String(titulo || '').trim();
-  return Object.keys(REGALOS).filter(function (id) { return REGALOS[id] === t || id === t; })[0] || '';
+// Celda de la hoja ("Las noches de hotel, Un día de spa") → ids de los planes, sin repetir.
+function idsRegalos_(celda) {
+  const ids = [];
+  String(celda || '').split(',').forEach(function (parte) {
+    const t = parte.trim();
+    const id = Object.keys(REGALOS).filter(function (k) { return REGALOS[k] === t || k === t; })[0];
+    if (id && ids.indexOf(id) < 0) ids.push(id);
+  });
+  return ids;
 }
+const celdaRegalos_ = function (ids) { return ids.map(function (id) { return REGALOS[id]; }).join(', '); };
 const MENSAJE = '¡Hola! 🤍💌 La cuenta regresiva ha comenzado🥂✨ Nos llena de alegría compartir contigo este capítulo tan especial de nuestra historia. Haz clic y descubre todos los detalles de nuestro gran día: [LINK LINK] 💍 Con cariño, The Navelas 🤍';
 const MAX_MENSAJE = 500;
 // Sin 0/O, 1/I/L: los códigos se pueden dictar sin confusiones.
@@ -94,10 +101,27 @@ function invitacion_(f) {
   return nombre && cupos >= 1 ? { nombre: nombre, cupos: cupos } : null;
 }
 
+// { CODIGO: { nombre, cupos } } de toda la lista. Abrir la hoja de planeación tarda ~1 s, así que se guarda
+// 10 min en la caché de Apps Script: un cambio de nombre o cupos en la lista tarda hasta 10 min en verse
+// (o nada, si se ejecuta generarEnlaces, que borra la caché).
+const CACHE_LISTA = 'lista';
+function invitaciones_() {
+  const cache = CacheService.getScriptCache();
+  const guardada = cache.get(CACHE_LISTA);
+  if (guardada) return JSON.parse(guardada);
+  const mapa = {};
+  filas_(lista_(), COL.codigo).forEach(function (f) {
+    const codigo = normalizar_(f[COL.codigo - 1]);
+    const inv = invitacion_(f);
+    if (codigo && inv) mapa[codigo] = inv;
+  });
+  cache.put(CACHE_LISTA, JSON.stringify(mapa), 600);
+  return mapa;
+}
+
 // Nombre y cupos salen de la lista; la respuesta (si ya respondió), de la pestaña Invitacion.
 function invitado_(codigo) {
-  const enLista = buscar_(lista_(), COL.codigo, COL.codigo, codigo);
-  const inv = enLista && invitacion_(enLista.datos);
+  const inv = invitaciones_()[normalizar_(codigo)];
   if (!inv) return null;
   const respuesta = buscar_(respuestas_(), 1, ENCABEZADOS.length, codigo);
   const r = respuesta ? respuesta.datos : [];
@@ -108,7 +132,7 @@ function invitado_(codigo) {
     asiste: String(r[3] || '').toLowerCase(), // '', 'si' o 'no'
     asistentes: parseInt(r[4], 10) || 0,
     alergias: String(r[7] || ''), // vuelve a la web para no perderla al cambiar la respuesta
-    regalo: idRegalo_(r[8]),
+    regalos: idsRegalos_(r[8]),
   };
 }
 
@@ -132,14 +156,13 @@ function doGet(e) {
 function contarRegalos_() {
   const counts = {};
   filas_(respuestas_(), COL_REGALO).forEach(function (f) {
-    const id = idRegalo_(f[COL_REGALO - 1]);
-    if (id) counts[id] = (counts[id] || 0) + 1;
+    idsRegalos_(f[COL_REGALO - 1]).forEach(function (id) { counts[id] = (counts[id] || 0) + 1; });
   });
   return counts;
 }
 
 // POST { codigo, asiste: 'si' | 'no', asistentes, mensaje, alergias } → guarda la respuesta en la fila de la invitación.
-// POST { codigo, regalo } → guarda el plan del Honeymoon fund elegido (solo el primero cuenta).
+// POST { codigo, regalo } → suma ese plan del Honeymoon fund a los de la invitación (sin repetirlo).
 function doPost(e) {
   let entrada;
   try {
@@ -159,9 +182,10 @@ function doPost(e) {
 
     if (entrada.regalo !== undefined) {
       if (!REGALOS.hasOwnProperty(entrada.regalo)) return json_({ ok: false, error: 'regalo' });
-      if (inv.regalo) return json_({ ok: false, error: 'ya-eligio', regalo: inv.regalo });
-      if (previa) hoja.getRange(previa.fila, COL_REGALO).setValue(REGALOS[entrada.regalo]);
-      else hoja.appendRow([codigo, inv.nombre, inv.cupos, '', '', '', '', '', REGALOS[entrada.regalo]]);
+      if (inv.regalos.indexOf(entrada.regalo) >= 0) return json_(inv); // ya lo tenía: no se duplica
+      const celda = celdaRegalos_(inv.regalos.concat([entrada.regalo]));
+      if (previa) hoja.getRange(previa.fila, COL_REGALO).setValue(celda);
+      else hoja.appendRow([codigo, inv.nombre, inv.cupos, '', '', '', '', '', celda]);
       return json_(invitado_(codigo));
     }
 
@@ -215,4 +239,5 @@ function generarEnlaces() {
     usados[codigo] = true;
     hoja.getRange(i + 2, COL.mensaje, 1, 2).setValues([[MENSAJE.replace('[LINK LINK]', SITIO + '/?i=' + codigo), codigo]]);
   });
+  CacheService.getScriptCache().remove(CACHE_LISTA); // la web ve los cambios de la lista al instante
 }
