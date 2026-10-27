@@ -1,21 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import heroImage from '../assets/decor/postcard_save_the_date_gus_gera.jpg';
+import heroImage from '../assets/decor/postcard_save_the_date_gus_gera.webp';
 
 const useTypewriter = (text, speed = 100, delay = 1500) => {
     const [displayed, setDisplayed] = useState('');
 
     useEffect(() => {
         let i = 0;
+        let interval;
         const timeout = setTimeout(() => {
-            const interval = setInterval(() => {
+            interval = setInterval(() => {
                 i++;
                 setDisplayed(text.slice(0, i));
                 if (i >= text.length) clearInterval(interval);
             }, speed);
-            return () => clearInterval(interval);
         }, delay);
-        return () => clearTimeout(timeout);
+        return () => { clearTimeout(timeout); clearInterval(interval); };
     }, [text, speed, delay]);
 
     return { displayed, done: displayed.length === text.length };

@@ -3,21 +3,21 @@ import { Menu, X } from 'lucide-react';
 import logo from '../assets/decor/logo.png';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const Navbar = () => {
-    const [isOpen, setIsOpen] = useState(false);
+const defaultLinks = [
+    { title: "Inicio", href: "#home" },
+    /* { title: "Nuestra Historia", href: "#story" },
+    { title: "Detalles", href: "#details" }, */
+    { title: "RSVP", href: "#rsvp" },
+];
 
-    const navLinks = [
-        { title: "Inicio", href: "#home" },
-        /* { title: "Nuestra Historia", href: "#story" },
-        { title: "Detalles", href: "#details" }, */
-        { title: "RSVP", href: "#rsvp" },
-    ];
+const Navbar = ({ navLinks = defaultLinks }) => {
+    const [isOpen, setIsOpen] = useState(false);
 
     return (
         <nav className="fixed top-0 left-0 w-full z-50 bg-white/95 backdrop-blur-sm shadow-md py-4">
             <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
                 <div className="flex items-center">
-                    <img src={logo} alt="G & G" className="h-10" />
+                    <img src={logo} alt="G & G" width="40" height="40" className="h-10 w-auto" />
                 </div>
 
                 {/* Desktop Menu */}
@@ -36,6 +36,8 @@ const Navbar = () => {
                 {/* Mobile Menu Button */}
                 <button
                     className="md:hidden text-dusty-olive"
+                    aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
+                    aria-expanded={isOpen}
                     onClick={() => setIsOpen(!isOpen)}
                 >
                     {isOpen ? <X size={28} /> : <Menu size={28} />}

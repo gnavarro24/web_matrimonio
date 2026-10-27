@@ -1,8 +1,8 @@
 import SectionWrapper from './SectionWrapper';
 import { motion } from 'framer-motion';
 import { useState, useEffect, useRef } from 'react';
-import fotoWeb from '../assets/decor/Save_the_Date.png';
-import dancingImage from '../assets/decor/dancing.jpg';
+import Countdown from './Countdown';
+import dancingImage from '../assets/decor/dancing.webp';
 
 const useTypewriterOnView = (text, speed = 100, delay = 300) => {
     const [displayed, setDisplayed] = useState('');
@@ -21,51 +21,28 @@ const useTypewriterOnView = (text, speed = 100, delay = 300) => {
     useEffect(() => {
         if (!hasStarted) return;
         let i = 0;
+        let interval;
         const timeout = setTimeout(() => {
-            const interval = setInterval(() => {
+            interval = setInterval(() => {
                 i++;
                 setDisplayed(text.slice(0, i));
                 if (i >= text.length) clearInterval(interval);
             }, speed);
-            return () => clearInterval(interval);
         }, delay);
-        return () => clearTimeout(timeout);
+        return () => { clearTimeout(timeout); clearInterval(interval); };
     }, [hasStarted, text, speed, delay]);
 
     const done = displayed.length === text.length && hasStarted;
     return { displayed, ref, done };
 };
 
-const OurStory = () => {
-    const calculateTimeLeft = () => {
-        const weddingDate = new Date("2027-03-20T16:00:00-05:00");
-        const difference = weddingDate.getTime() - new Date().getTime();
-        let timeLeft = {};
-
-        if (difference > 0) {
-            timeLeft = {
-                días: Math.floor(difference / (1000 * 60 * 60 * 24)),
-                horas: Math.floor((difference / (1000 * 60 * 60)) % 24),
-                min: Math.floor((difference / 1000 / 60) % 60),
-                seg: Math.floor((difference / 1000) % 60),
-            };
-        }
-        return timeLeft;
-    };
-
+const OurStory = ({ showDate = true }) => {
     const theTypewriter = useTypewriterOnView('The', 150, 0);
     const navelasTypewriter = useTypewriterOnView('Navelas', 120, 500);
 
-    const [timeLeft, setTimeLeft] = useState(calculateTimeLeft());
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setTimeLeft(calculateTimeLeft());
-        }, 1000);
-        return () => clearTimeout(timer);
-    });
     return (
         <>
+        {showDate && (
         <section className="bg-[#413c22] text-white py-12">
             <motion.div
                 initial={{ opacity: 0, scale: 0.5 }}
@@ -78,21 +55,14 @@ const OurStory = () => {
             <div className="text-2xl sm:text-3xl md:text-4xl mb-10 mt-5 font-cormorant text-center">
                 Medellín, Colombia
             </div>
-            {/* Countdown */}
-            <div className="flex justify-center gap-8 md:gap-12 font-sans">
-                {Object.keys(timeLeft).map((interval) => (
-                    <div key={interval} className="flex flex-col items-center">
-                        <span className="font-serif text-xl sm:text-3xl md:text-4xl">{timeLeft[interval] || '0'}</span>
-                        <span className="text-[10px] sm:text-xs uppercase tracking-widest mt-2">{interval}</span>
-                    </div>
-                ))}
-            </div>
+            <Countdown />
         </section>
+        )}
         <SectionWrapper id="story" className="bg-cream pt-10 pb-10 bg-cover bg-center bg-no-repeat" style={{backgroundImage: `linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)), url(${dancingImage})`}}>
             <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-1 gap-12 items-center">
                 {/*<div className="order-2 md:order-1">
                     <div>
-                        <img
+                        <img loading="lazy" decoding="async"
                             src={fotoWeb}
                             alt="Couple Moment"
                             className="relative z-10 w-full"

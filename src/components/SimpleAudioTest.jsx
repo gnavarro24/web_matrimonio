@@ -1,7 +1,18 @@
 import { useState, useRef, useEffect } from 'react';
 import { Play, Pause } from 'lucide-react';
 
-const SimpleAudioTest = ({ src }) => {
+// La pausa del invitado se recuerda en la pestaña: al volver desde otra página la música sigue en pausa.
+const PAUSA = 'musica-pausada';
+const leerPausa = () => { try { return !!sessionStorage.getItem(PAUSA); } catch { return false; } };
+const guardarPausa = (pausada) => {
+    try { pausada ? sessionStorage.setItem(PAUSA, '1') : sessionStorage.removeItem(PAUSA); } catch { /* no se recuerda */ }
+};
+const VOLUMEN = 0.15; // ponytail: iOS ignora audio.volume; ahí suena al volumen del teléfono
+
+// Montado una vez para todas las páginas de la invitación (main.jsx): no se corta al cambiar de vista.
+// Con sobre por abrir queda oculto hasta que lo abren ('musica-activar', dentro del toque, como pide iOS).
+const SimpleAudioTest = ({ src, oculto = false }) => {
+    const [visible, setVisible] = useState(!oculto);
     const [isPlaying, setIsPlaying] = useState(false);
     const [wasPlayingBeforeHide, setWasPlayingBeforeHide] = useState(false);
     const audioRef = useRef(null);
@@ -14,20 +25,36 @@ const SimpleAudioTest = ({ src }) => {
         if (audio.paused) {
             audio.play();
             setIsPlaying(true);
+            guardarPausa(false);
         } else {
             audio.pause();
             setIsPlaying(false);
+            guardarPausa(true);
         }
     };
 
-    // Auto-reproducir al montar
+    // Auto-reproducir al montar, bajito, salvo que el invitado la haya pausado o falte abrir el sobre
     useEffect(() => {
         const audio = audioRef.current;
-        if (audio) {
-            setTimeout(() => {
-                audio.play().catch(() => {});
-            }, 500);
+        if (audio) audio.volume = VOLUMEN;
+        if (audio && !oculto && !leerPausa()) {
+            const t = setTimeout(() => audio.play().catch(() => {}), 500);
+            return () => clearTimeout(t);
         }
+    }, [oculto]);
+
+    useEffect(() => {
+        const activar = () => {
+            setVisible(true);
+            if (!leerPausa()) audioRef.current?.play().catch(() => {});
+        };
+        const mostrar = () => setVisible(true); // cambiar de página ya implica que el sobre se abrió
+        window.addEventListener('musica-activar', activar);
+        window.addEventListener('ruta', mostrar);
+        return () => {
+            window.removeEventListener('musica-activar', activar);
+            window.removeEventListener('ruta', mostrar);
+        };
     }, []);
 
     // Manejar cambio de pestaña
@@ -99,7 +126,9 @@ const SimpleAudioTest = ({ src }) => {
                 onPause={() => setIsPlaying(false)}
             />
 
-            <button
+            {visible && <button
+                type="button"
+                aria-label={isPlaying ? 'Pausar la música' : 'Reproducir la música'}
                 onClick={handleButtonClick}
                 style={{
                     width: '48px',
@@ -117,7 +146,7 @@ const SimpleAudioTest = ({ src }) => {
                 }}
             >
                 {isPlaying ? <Pause size={16} /> : <Play size={16} />}
-            </button>
+            </button>}
         </div>
     );
 };

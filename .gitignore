@@ -1,2 +1,9 @@
 node_modules/
 .DS_Store
+.wrangler/
+.idea/
+.env
+dist/
+
+# Originales de las fotos (pesados); la página usa las copias .webp
+src/assets/decor/historia/*.jpg

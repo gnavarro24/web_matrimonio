@@ -112,7 +112,7 @@ const ImageCarousel = ({
         >
             <div className="relative w-full" style={{ aspectRatio: '4 / 3' }}>
                 <AnimatePresence mode="popLayout" initial={false}>
-                    <motion.img
+                    <motion.img loading="lazy" decoding="async"
                         key={currentIndex}
                         src={images[currentIndex].src}
                         alt={images[currentIndex].alt || `Imagen ${currentIndex + 1}`}
@@ -121,7 +121,6 @@ const ImageCarousel = ({
                         exit={{ opacity: 0 }}
                         transition={{ duration: 1.2, ease: [0.4, 0, 0.2, 1] }}
                         className="absolute inset-0 w-full h-full object-cover"
-                        loading="lazy"
                     />
                 </AnimatePresence>
 
@@ -129,7 +128,7 @@ const ImageCarousel = ({
                     <>
                         <button
                             onClick={goToPrevious}
-                            className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black bg-opacity-20 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-opacity-40 z-10"
+                            className="absolute left-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black bg-opacity-20 text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 hover:bg-opacity-40 z-10"
                             aria-label="Imagen anterior"
                         >
                             <ChevronLeft size={20} />
@@ -137,7 +136,7 @@ const ImageCarousel = ({
 
                         <button
                             onClick={goToNext}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black bg-opacity-20 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-opacity-40 z-10"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black bg-opacity-20 text-white md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 hover:bg-opacity-40 z-10"
                             aria-label="Siguiente imagen"
                         >
                             <ChevronRight size={20} />
@@ -146,7 +145,7 @@ const ImageCarousel = ({
                 )}
 
                 {showIndicators && images.length > 1 && (
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                    <div className="absolute bottom-4 inset-x-4 flex flex-wrap justify-center gap-2">
                         {images.map((_, index) => (
                             <button
                                 key={index}

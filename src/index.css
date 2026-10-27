@@ -1,12 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
-
+/* Google Fonts (Lato, Playfair) y la precarga de Anastasia y Cormorant van en index.html: un @import aquí bloquea el pintado en cadena */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @font-face {
   font-family: 'Anastasia Script';
-  src: url('./assets/fonts/Anastasia-Script_Regular.woff2');
+  src: url('/fonts/Anastasia-Script_Regular.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -14,7 +13,7 @@
 
 @font-face {
   font-family: 'Anastasia Script';
-  src: url('./assets/fonts/GreatVibes-Regular.ttf') format('truetype');
+  src: url('./assets/fonts/GreatVibes-Regular.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -23,7 +22,7 @@
 
 @font-face {
   font-family: 'Cormorant Garamond';
-  src: url('./assets/fonts/CormorantGaramond-VariableFont_wght.ttf') format('truetype');
+  src: url('/fonts/CormorantGaramond-VariableFont_wght.woff2') format('woff2');
   font-weight: 100 900;
   font-style: normal;
   font-display: swap;
@@ -31,7 +30,7 @@
 
 @font-face {
   font-family: 'Pinyon Script';
-  src: url('./assets/fonts/PinyonScript-Regular.ttf') format('truetype');
+  src: url('./assets/fonts/PinyonScript-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
 }
@@ -52,84 +51,44 @@ body {
   @apply text-black font-sans antialiased;
   background-color: #f7f2e9;
 }
+/* El fondo de body es el que Safari muestra al rebotar y tras su barra inferior: igual al final de cada página */
+body:has(.pagina-verde) { background-color: #4a4529; }
+body:has(#contacto) { background-color: #413c22; } /* la invitación termina en Contacto */
 
 .bg-cream {
   background-color: #f7f2e9;
 }
 
-/* Elegant double-line frame */
-.elegant-frame {
-  position: relative;
-  padding: 12px;
+/* Telón entre páginas (PageVeil) */
+.velo {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  background: #413c22; color: #fffdf7;
+  transform: translateY(100%); visibility: hidden; pointer-events: none;
 }
+.velo-entra { transform: none; visibility: visible; pointer-events: auto; transition: transform .6s cubic-bezier(.76,0,.24,1); }
+.velo-cubre { transform: none; visibility: visible; pointer-events: auto; }
+.velo-sale { transform: translateY(-100%); visibility: visible; transition: transform .7s cubic-bezier(.76,0,.24,1); }
+.velo-mono { opacity: 0; transform: translateY(10px); }
+.velo-entra .velo-mono { opacity: 1; transform: none; transition: opacity .45s ease .2s, transform .45s ease .2s; }
+.velo-cubre .velo-mono { opacity: 1; transform: none; }
+.velo-sale .velo-mono { opacity: 0; transition: opacity .25s; }
+.velo-linea { transform: scaleX(0); }
+.velo-entra .velo-linea { transform: scaleX(1); transition: transform .5s ease .3s; }
+.velo-cubre .velo-linea { transform: scaleX(1); }
 
-.elegant-frame::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border: 1px solid #6b5d36;
-}
+/* Títulos de sección que se descubren al entrar en pantalla (SectionWrapper) */
+.revela h2 { clip-path: inset(0 0 100% 0); }
+.revela.on h2 { animation: revela-titulo 1s cubic-bezier(.7,0,.2,1) .15s forwards; }
+/* El final con márgenes negativos no recorta los rasgos de la letra script */
+@keyframes revela-titulo { to { clip-path: inset(-30% -10% -40% -10%); } }
 
-.elegant-frame::after {
-  content: '';
-  position: absolute;
-  inset: 6px;
-  border: 1px solid #6b5d36;
-}
+/* Historia: fila de fotos que corre sola de derecha a izquierda. La fila va duplicada, así que -50 % empalma sin salto */
+.carrusel { animation: carrusel 56s linear infinite; }
+@keyframes carrusel { to { transform: translateX(-50%); } }
 
-.elegant-frame .corner-ornament {
-  position: absolute;
-  width: 16px;
-  height: 16px;
-  z-index: 2;
-}
-
-.elegant-frame .corner-ornament::before,
-.elegant-frame .corner-ornament::after {
-  content: '';
-  position: absolute;
-  background-color: #6b5d36;
-}
-
-.elegant-frame .corner-ornament::before {
-  width: 16px;
-  height: 1px;
-  top: 50%;
-}
-
-.elegant-frame .corner-ornament::after {
-  width: 1px;
-  height: 16px;
-  left: 50%;
-}
-
-.elegant-frame .corner-tl { top: -1px; left: -1px; }
-.elegant-frame .corner-tr { top: -1px; right: -1px; }
-.elegant-frame .corner-bl { bottom: -1px; left: -1px; }
-.elegant-frame .corner-br { bottom: -1px; right: -1px; }
-
-/* Audio Player Styles */
-.audio-slider {
-  background: linear-gradient(to right, #697857 0%, #697857 var(--value, 50%), #e5e7eb var(--value, 50%), #e5e7eb 100%);
-}
-
-.audio-slider::-webkit-slider-thumb {
-  appearance: none;
-  height: 14px;
-  width: 14px;
-  background: #697857;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.audio-slider::-moz-range-thumb {
-  height: 14px;
-  width: 14px;
-  background: #697857;
-  border-radius: 50%;
-  cursor: pointer;
-  border: 2px solid white;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+@media (prefers-reduced-motion: reduce) {
+  .carrusel { animation: none; }
+  .revela h2 { clip-path: none; }
+  .revela.on h2 { animation: none; }
 }
