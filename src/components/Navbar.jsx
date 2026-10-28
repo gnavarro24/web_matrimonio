@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
 import logo from '../assets/decor/logo.png';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -35,12 +34,12 @@ const Navbar = ({ navLinks = defaultLinks }) => {
 
                 {/* Mobile Menu Button */}
                 <button
-                    className="md:hidden text-dusty-olive"
-                    aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
+                    className="md:hidden min-w-[4.5rem] border border-dusty-olive/60 px-3 py-1.5 text-sm tracking-widest uppercase text-dusty-olive"
+                    aria-label={isOpen ? "Cerrar guía" : "Abrir guía"}
                     aria-expanded={isOpen}
                     onClick={() => setIsOpen(!isOpen)}
                 >
-                    {isOpen ? <X size={28} /> : <Menu size={28} />}
+                    {isOpen ? "Cerrar" : "Guía"}
                 </button>
             </div>
 
