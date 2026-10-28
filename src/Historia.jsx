@@ -66,7 +66,7 @@ function Historia() {
             <section className="max-w-[420px] mx-8 sm:mx-auto mt-7 bg-[#f7f2e9] text-[#4a4529] p-1 shadow-[0_12px_24px_rgba(0,0,0,0.3)]">
                 <div className="border border-[#4a4529]/35 px-5 pt-5 pb-4 text-center">
                     <p className="font-cormorant italic font-semibold text-[17px] md:text-[19px] leading-[1.35]">
-                        Así como es de especial nuestra historia, seguramente tú has tenido un rol en ella, soñamos con que nos acompañes en nuestro día.
+                        Si estás leyendo esto, es porque de alguna forma has sido parte de nuestra historia. Nada nos haría más felices que tenerte con nosotros en nuestro día.
                     </p>
                     <p className="mt-3 font-cormorant font-bold uppercase tracking-[0.24em] text-[11px] text-[#586748]">Con amor</p>
                     <p className="font-anastasia text-[2rem] md:text-[2.4rem] leading-[1.15] whitespace-nowrap">Gustavo &amp; Geraldine</p>

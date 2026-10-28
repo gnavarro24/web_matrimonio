@@ -121,7 +121,6 @@ function Regalos() {
         }
     };
 
-    const total = gifts.reduce((sum, g) => sum + (counts[g.id] || 0), 0);
 
     return (
         <div id="top" className="min-h-screen bg-cream overflow-clip">
@@ -141,22 +140,16 @@ function Regalos() {
                     <span className="font-anastasia">fund</span>
                 </h1>
                 <p className="max-w-2xl mx-auto mt-6 text-xl md:text-2xl font-cormorant italic font-medium">
-                    Elige tu plan favorito y ayúdanos a llegar a la meta de nuestro honeymoon o de nuestro primer hogar.
-                </p>
-                <p className="mt-7 inline-block -rotate-3 border-2 border-dusty-olive p-[5px] text-[#586748]" aria-live="polite">
-                    <span className="flex items-baseline gap-2.5 border border-dusty-olive px-5 py-2.5">
-                        <span className="font-cormorant font-bold text-[40px] leading-none">{total}</span>
-                        <span className={`${kicker} text-xs tracking-[0.22em]`}>{total === 1 ? 'aporte' : 'aportes'} hasta ahora</span>
-                    </span>
+                    1. Elige tus planes o regalos favoritos.
                 </p>
             </header>
 
             <SectionWrapper className={`py-12 md:py-16 ${ink}`}>
-                <p className="max-w-2xl mx-auto mb-8 text-center text-xl font-cormorant italic font-medium">
-                    {elegidos.length
-                        ? <>Elegiste: <strong className="not-italic font-semibold">{gifts.filter((g) => elegidos.includes(g.id)).map((g) => g.title).join(', ')}</strong>. ¡Gracias! Puedes sumar o quitar los planes que quieras.</>
-                        : 'Elige uno o varios planes.'}
-                </p>
+                {elegidos.length > 0 && (
+                    <p className="max-w-2xl mx-auto mb-8 text-center text-xl font-cormorant italic font-medium">
+                        Elegiste: <strong className="not-italic font-semibold">{gifts.filter((g) => elegidos.includes(g.id)).map((g) => g.title).join(', ')}</strong>. ¡Gracias! Puedes sumar o quitar los planes que quieras.
+                    </p>
+                )}
                 <p role="alert" className="mb-6 text-center text-lg font-cormorant text-red-700 empty:hidden">{error}</p>
                 <div className="max-w-[1072px] mx-auto grid gap-x-[30px] gap-y-9 sm:grid-cols-2 lg:grid-cols-3">
                     {gifts.map(({ id, title, text, goal, cta }, i) => {
@@ -177,7 +170,7 @@ function Regalos() {
                                 </span>
                                 <p className={`${kicker} text-[11px] tracking-[0.24em]`}>{elegidos.includes(id) ? '♥ Tu elección' : `Plan n.º ${i + 1}`}</p>
                                 <h2 className="text-3xl leading-[1.1] font-cormorant font-semibold">{title}</h2>
-                                <p className="mb-2 text-xl leading-snug font-cormorant italic font-medium">{text}</p>
+                                {text && <p className="mb-2 text-xl leading-snug font-cormorant italic font-medium">{text}</p>}
 
                                 <div className="mt-auto w-full flex flex-col gap-3">
                                     <div
@@ -241,7 +234,8 @@ function Regalos() {
                     })}
                 </div>
                 <p className="max-w-2xl mx-auto mt-11 text-center text-[19px] leading-normal font-cormorant italic font-medium">
-                    Los aportes de esta página son simbólicos: aquí no se mueve dinero. Si quieres hacer tu aporte al Honeymoon fund, puedes usar los datos bancarios de abajo o lluvia de sobres el día de la boda.
+                    2. Tu selección nos hará saber tu regalo.<br />
+                    Puedes hacer tu aporte con los datos bancarios que encontrarás abajo o en la lluvia de sobres el día de la boda. ¡Gracias!
                 </p>
             </SectionWrapper>
 

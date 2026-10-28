@@ -16,7 +16,8 @@ const NuestraHistoria = () => (
         >
             <img loading="lazy" decoding="async" src={encaje} alt="" aria-hidden="true" className="absolute inset-0 w-full h-full opacity-[0.82] drop-shadow-[0_18px_30px_rgba(0,0,0,0.45)]" />
             <span className="relative flex flex-col items-center">
-                <h2 className="text-[2.5rem] sm:text-[2.9rem] md:text-[3.3rem] leading-[0.95] font-anastasia">
+                {/* La letra Anastasia dibuja el trazo ~0.18em a la derecha de su caja: el pr lo recentra (igual que en Historia.jsx) */}
+                <h2 className="pr-[0.35em] text-[2.5rem] sm:text-[2.9rem] md:text-[3.3rem] leading-[0.95] font-anastasia">
                     Nuestra<br />historia
                 </h2>
                 <span className="mt-4 font-cormorant font-semibold uppercase tracking-[0.2em] text-sm md:text-base border-b border-transparent group-hover:border-current group-focus-visible:border-current transition-colors duration-300">
