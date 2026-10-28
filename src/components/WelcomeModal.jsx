@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { motion, AnimatePresence, MotionConfig, useReducedMotion } from 'framer-motion';
 import waxSealImage from '../assets/decor/sello_cera.webp';
 import toscanaImage from '../assets/decor/toscana.webp';
 import logo from '../assets/decor/logo.png';
@@ -248,12 +248,12 @@ const Envelope = ({ guestName, cargando, paso, solapaAtras, tilt }) => {
 // `envelope`: muestra el sobre (invitación); sin él, solo el sello sobre fondo oscuro (save the date).
 // onRevelar: al entrar al sobre la página de abajo ya debe verse (el sobre se desvanece sobre ella).
 const WelcomeModal = ({ isOpen, onClose, onStartMusic, onRevelar, envelope = false, guestName = '', cargando = false }) => {
-    const sinMovimiento = useReducedMotion();
     const [paso, setPaso] = useState(0);
     const [solapaAtras, setSolapaAtras] = useState(false);
     const [tilt, setTilt] = useState({ x: 0, y: 0 });
     const timers = useRef([]);
     const salio = useRef(false);
+    const tocado = useRef(0); // cuándo se tocó el sello
     useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
     const handleEnter = () => {
@@ -265,11 +265,14 @@ const WelcomeModal = ({ isOpen, onClose, onStartMusic, onRevelar, envelope = fal
 
     // La música arranca con el toque (los navegadores lo exigen); la invitación aparece al terminar la animación.
     const openEnvelope = () => {
-        if (paso >= 3) return entrar(); // la tarjeta ya está a la vista: un toque salta la espera
+        // Con la tarjeta ya quieta, un toque salta la espera. Antes no: un doble toque al sello se la saltaba sin verla.
+        if (paso >= 3 && Date.now() - tocado.current > PASOS[2][0] + SACAR.duration * 1000) return entrar();
         if (paso) return;
+        tocado.current = Date.now();
         localStorage.setItem('wedding-audio-enabled', 'true');
         onStartMusic();
-        if (sinMovimiento) return onClose();
+        // "Reducir movimiento" en el celular: antes se saltaba directo a la página y no se veía la tarjeta de los padres.
+        // Ahora la secuencia es la misma; MotionConfig (abajo) quita los desplazamientos y deja solo los fundidos.
         const luego = (ms, fn) => timers.current.push(setTimeout(fn, ms));
         PASOS.slice(0, -1).forEach(([ms, n]) => luego(ms, () => setPaso(n)));
         luego(SOLAPA_ATRAS_MS, () => setSolapaAtras(true));
@@ -293,6 +296,7 @@ const WelcomeModal = ({ isOpen, onClose, onStartMusic, onRevelar, envelope = fal
     };
 
     return (
+        <MotionConfig reducedMotion="user">
         <AnimatePresence>
             {isOpen && (
                 <motion.div
@@ -341,6 +345,7 @@ const WelcomeModal = ({ isOpen, onClose, onStartMusic, onRevelar, envelope = fal
                 </motion.div>
             )}
         </AnimatePresence>
+        </MotionConfig>
     );
 };
 
