@@ -81,6 +81,7 @@ const Envelope = ({ guestName, cargando, paso, solapaAtras, tilt }) => {
     // Si el nombre llega después de abrir la página (la hoja tarda), se escribe enseguida, sin la espera inicial.
     const llegoTarde = useRef(false);
     if (cargando) llegoTarde.current = true;
+    const nombreLargo = guestName.length > 22; // ~lo que cabe en una línea a la letra normal
     const sobreRef = useRef(null);
     const tarjetaRef = useRef(null);
     // Paso 3: el sobre baja hasta salir de la pantalla; la tarjeta sube dentro de él lo justo para que, en
@@ -160,9 +161,10 @@ const Envelope = ({ guestName, cargando, paso, solapaAtras, tilt }) => {
                                 initial={sinMovimiento ? false : { clipPath: 'inset(0 100% 0 0)' }}
                                 animate={{ clipPath: 'inset(0 0% 0 0)' }}
                                 transition={{ duration: 1.4, delay: llegoTarde.current ? 0.1 : 1.5, ease: 'easeInOut' }}
-                                className="absolute z-[4] inset-x-[8%] bottom-[5%] truncate font-['Pinyon_Script'] text-[clamp(1.35rem,7vw,2.6rem)] leading-tight text-[#4f4a2c]"
+                                className={`absolute z-[4] inset-x-[8%] bottom-[5%] font-['Pinyon_Script'] leading-tight text-[#4f4a2c] break-words ${nombreLargo ? 'text-[clamp(1.05rem,5vw,1.9rem)]' : 'text-[clamp(1.35rem,7vw,2.6rem)]'}`}
                             >
-                                {guestName}
+                                {/* Nombre largo: letra más pequeña y, si son dos personas, una encima de la otra ("Ana Pérez" / "& Luis Gómez") */}
+                                {(nombreLargo ? guestName.split(/\s+(?=(?:&|y)\s)/) : [guestName]).map((linea) => <span key={linea} className="block">{linea}</span>)}
                             </motion.p>
                         )}
 

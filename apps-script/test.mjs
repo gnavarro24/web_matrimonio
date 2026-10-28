@@ -103,12 +103,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     assert.deepEqual(s.post({ codigo: 'abc234', regalo: 'tiquetes' }).regalos, ['tiquetes']);
     assert.equal(s.respuestas[1][8], 'Los tiquetes de avión', 'en la hoja queda el título');
     assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'hotel' }).regalos, ['tiquetes', 'hotel']);
-    assert.equal(s.respuestas[1][8], 'Los tiquetes de avión, Las noches de hotel y excursiones');
+    assert.equal(s.respuestas[1][8], 'Los tiquetes de avión, Las noches de hotel y recuerdos inolvidables');
     assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'tiquetes' }).regalos, ['tiquetes', 'hotel'], 'repetir un plan no lo duplica');
-    assert.equal(s.respuestas[1][8], 'Los tiquetes de avión, Las noches de hotel y excursiones');
+    assert.equal(s.respuestas[1][8], 'Los tiquetes de avión, Las noches de hotel y recuerdos inolvidables');
     assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'nuestro-hogar', quitar: true }).regalos, ['tiquetes', 'hotel'], 'quitar uno que no tenía no cambia nada');
     assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'tiquetes', quitar: true }).regalos, ['hotel']);
-    assert.equal(s.respuestas[1][8], 'Las noches de hotel y excursiones');
+    assert.equal(s.respuestas[1][8], 'Las noches de hotel y recuerdos inolvidables');
     assert.deepEqual(s.post({ codigo: 'ABC234', regalo: 'tiquetes' }).regalos, ['hotel', 'tiquetes'], 'se puede volver a elegir');
     s.post({ codigo: 'ABC234', asiste: 'no' });
     assert.deepEqual(s.get('ABC234').regalos, ['hotel', 'tiquetes'], 'cambiar la respuesta no borra los regalos');
@@ -122,7 +122,8 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     s.generarEnlaces();
     assert.equal(s.celdas[0][5], 'Código');
     assert.equal(s.celdas[1][5], 'ABC234');
-    assert.match(s.celdas[1][4], /^¡Hola! 🤍💌 .* nuestro gran día: https:\/\/thenavelas\.website\/\?i=ABC234 💍 Con cariño, The Navelas 🤍$/);
+    assert.match(s.celdas[1][4], /^¡Hola Flia\. Pérez! 🤍💌 .* compartir con ustedes este .* nuestro gran día: https:\/\/thenavelas\.website\/\?i=ABC234 💍 Con cariño, The Navelas 🤍$/);
+    assert.match(s.celdas[3][4], /^¡Hola Tía Marta! .* compartir contigo este /, '1 cupo: contigo');
     assert.equal(s.celdas[2][4], '', 'el acompañante sin cupos no recibe mensaje');
     assert.equal(s.celdas[2][5], '');
     assert.equal(s.celdas[5][5], '', 'sin nombre no hay invitación');
