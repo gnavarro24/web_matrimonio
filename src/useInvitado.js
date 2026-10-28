@@ -5,11 +5,17 @@ export const RSVP_API = import.meta.env.VITE_RSVP_API;
 
 // Enlace personal: /?i=ABC234
 // La URL solo lleva el código; el nombre y los cupos se cargan de la lista "Tarjeta Wedding Guest List".
-// El código se recuerda para que siga valiendo al volver desde Detalles o Regalos.
+// El código se recuerda solo en esta pestaña (sessionStorage), para que siga valiendo al pasar por Detalles o Regalos
+// o al recargar. Entrar al sitio en otra pestaña sin ?i= no muestra la última invitación abierta.
 const readCode = () => {
     const fromUrl = new URLSearchParams(window.location.search).get('i');
-    if (fromUrl) localStorage.setItem('invitado', fromUrl);
-    return fromUrl || localStorage.getItem('invitado') || '';
+    try {
+        localStorage.removeItem('invitado'); // donde se guardaba antes (para siempre)
+        if (fromUrl) sessionStorage.setItem('invitado', fromUrl);
+        return fromUrl || sessionStorage.getItem('invitado') || '';
+    } catch {
+        return fromUrl || '';
+    }
 };
 
 // Regla de la boda: la palabra "Familia" al inicio del nombre nunca se muestra; va abreviada como "Flia."
@@ -62,7 +68,7 @@ export function useInvitado() {
         consultar(code)
             .then((data) => {
                 if (!data.ok) {
-                    localStorage.removeItem('invitado');
+                    sessionStorage.removeItem('invitado');
                     localStorage.removeItem(GUARDADO);
                     setGuestRaw(null);
                     return setStatus('invalid');
