@@ -14,7 +14,7 @@
  *   A Código | B Nombre | C Cupos | D Asiste | E Asistentes | F Mensaje | G Respondió | H Alergias | I Regalo
  *
  * I son los planes del Honeymoon fund que eligió la invitación, separados por coma y sin repetir
- * (p. ej. "Las noches de hotel y excursiones, Nuestro primer hogar"); cada plan suma un aporte en la web.
+ * (p. ej. "Las noches de hotel y recuerdos inolvidables, Nuestro primer hogar"); cada plan suma un aporte en la web.
  *
  * El enlace de cada invitado solo lleva su código:  https://thenavelas.website/?i=ABC234
  * El nombre y los cupos no viajan en la URL: la web los pide aquí con el código,
@@ -37,13 +37,13 @@ const COL_REGALO = 9;
 // Planes del Honeymoon fund: mismo `id` que src/gifts.js; en la hoja se escribe el título.
 const REGALOS = {
   'tiquetes': 'Los tiquetes de avión',
-  'hotel': 'Las noches de hotel y excursiones',
+  'hotel': 'Las noches de hotel y recuerdos inolvidables',
   'luna-de-miel': 'Las excursiones',
   'nuestro-hogar': 'Nuestro primer hogar',
 };
 // Títulos viejos que pueden seguir escritos en la hoja.
-const ANTES = { 'Las noches de hotel': 'hotel' };
-// Celda de la hoja ("Las noches de hotel y excursiones, Nuestro primer hogar") → ids de los planes, sin repetir.
+const ANTES = { 'Las noches de hotel': 'hotel', 'Las noches de hotel y excursiones': 'hotel', 'Las noches de hotel y desayunos con vista': 'hotel' };
+// Celda de la hoja ("Las noches de hotel y recuerdos inolvidables, Nuestro primer hogar") → ids de los planes, sin repetir.
 function idsRegalos_(celda) {
   const ids = [];
   String(celda || '').split(',').forEach(function (parte) {
@@ -54,7 +54,8 @@ function idsRegalos_(celda) {
   return ids;
 }
 const celdaRegalos_ = function (ids) { return ids.map(function (id) { return REGALOS[id]; }).join(', '); };
-const MENSAJE = '¡Hola! 🤍💌 La cuenta regresiva ha comenzado🥂✨ Nos llena de alegría compartir contigo este capítulo tan especial de nuestra historia. Haz clic y descubre todos los detalles de nuestro gran día: [LINK LINK] 💍 Con cariño, The Navelas 🤍';
+// [NOMBRE] = nombre de la invitación ("Flia." en vez de "Familia"); [CONTIGO] = "contigo" con 1 cupo, "con ustedes" con más.
+const MENSAJE = '¡Hola [NOMBRE]! 🤍💌 La cuenta regresiva ha comenzado🥂✨ Nos llena de alegría compartir [CONTIGO] este capítulo tan especial de nuestra historia. Haz clic y descubre todos los detalles de nuestro gran día: [LINK LINK] 💍 Con cariño, The Navelas 🤍';
 const MAX_MENSAJE = 500;
 // Sin 0/O, 1/I/L: los códigos se pueden dictar sin confusiones.
 const ALFABETO = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -231,14 +232,18 @@ function generarEnlaces() {
 
   hoja.getRange(1, COL.codigo).setValue('Código');
   filas.forEach(function (f, i) {
-    if (!invitacion_(f)) return;
+    const inv = invitacion_(f);
+    if (!inv) return;
     let codigo = normalizar_(f[COL.codigo - 1]);
     for (let intento = 0; !codigo; intento++) {
       const nuevo = codigo_(f[COL.nombre - 1] + '|' + (i + 2) + '|' + intento);
       if (!usados[nuevo]) codigo = nuevo;
     }
     usados[codigo] = true;
-    hoja.getRange(i + 2, COL.mensaje, 1, 2).setValues([[MENSAJE.replace('[LINK LINK]', SITIO + '/?i=' + codigo), codigo]]);
+    hoja.getRange(i + 2, COL.mensaje, 1, 2).setValues([[MENSAJE
+      .replace('[NOMBRE]', inv.nombre.replace(/^\s*(familia|flia)\b\.?\s*/i, 'Flia. '))
+      .replace('[CONTIGO]', inv.cupos === 1 ? 'contigo' : 'con ustedes')
+      .replace('[LINK LINK]', SITIO + '/?i=' + codigo), codigo]]);
   });
   CacheService.getScriptCache().remove(CACHE_LISTA); // la web ve los cambios de la lista al instante
 }
